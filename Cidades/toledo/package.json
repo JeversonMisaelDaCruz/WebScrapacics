@@ -1,0 +1,17 @@
+{
+  "name": "webscrap-toledoacic",
+  "version": "1.0.0",
+  "description": "WebScraping dos associados ACIT Toledo",
+  "main": "script.js",
+  "scripts": {
+    "start": "node script.js"
+  },
+  "author": "Jeverson misael da cruz filho",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cheerio": "^1.0.0-rc.12",
+    "p-limit": "^6.2.0",
+    "xlsx": "^0.18.5"
+  }
+}

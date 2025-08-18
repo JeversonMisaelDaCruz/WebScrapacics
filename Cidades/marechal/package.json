@@ -1,0 +1,32 @@
+{
+  "name": "acimacar-scraper",
+  "version": "1.0.0",
+  "description": "Web scraper para extrair dados das empresas associadas da ACIMACAR",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "node exemplo-uso.js teste A",
+    "completo": "node exemplo-uso.js completo",
+    "seguro": "node exemplo-uso.js seguro"
+  },
+  "keywords": [
+    "webscraping",
+    "puppeteer",
+    "acimacar",
+    "xlsx",
+    "nodejs"
+  ],
+  "author": "Jeverson Misael",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^22.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
