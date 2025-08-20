@@ -1,0 +1,27 @@
+{
+  "name": "scraper-acit",
+  "version": "1.0.0",
+  "description": "Web scraper para extrair dados de empresas da ACIT e gerar arquivo Excel",
+  "main": "scraper-acit-completo.js",
+  "scripts": {
+    "start": "node scraper-acit-completo.js",
+    "dev": "node scraper-acit-completo.js"
+  },
+  "keywords": [
+    "web-scraping",
+    "acit",
+    "empresas",
+    "excel",
+    "node.js"
+  ],
+  "author": "Jeverson Misael",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.12",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

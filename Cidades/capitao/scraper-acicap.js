@@ -1,339 +1,202 @@
-const puppeteer = require("puppeteer");
-const XLSX = require("xlsx");
-const fs = require("fs");
+const axios = require("axios");
+const cheerio = require("cheerio");
+
+const BASE_URL = "https://www.acicap.org.br";
 
 class AcicapScraper {
   constructor() {
-    this.empresas = [];
-    this.baseUrl = "https://www.acicap.org.br/associado/";
-    this.detalhesColetados = 0;
-    this.errosDetalhes = 0;
+    this.baseUrl = BASE_URL + "/associado/";
+  }
+
+  // Função para limpar endereço removendo a cidade e o CEP
+  limparEndereco(endereco) {
+    if (!endereco || endereco === "Não informado") return endereco;
+
+    // Remove o CEP do endereço
+    const enderecoSemCep = endereco.replace(/\d{5}-\d{3}/, "").trim();
+
+    // Remove referências a Capitão L. Marques e PR
+    let enderecoLimpo = enderecoSemCep
+      .replace(/Capitão Leônidas Marques/gi, "")
+      .replace(/Capitão L\. Marques/gi, "")
+      .replace(/\s*-\s*PR/gi, "")
+      .replace(/\s*,\s*PR/gi, "")
+      .replace(/\s*PR\s*/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/^[\s,\-]+|[\s,\-]+$/g, "")
+      .trim();
+
+    // Se o resultado da limpeza for uma string vazia, retorna o original sem CEP
+    return enderecoLimpo || enderecoSemCep;
   }
 
   async iniciarScraping() {
     console.log("🚀 Iniciando web scraping da ACICAP...");
-    let browser;
-    let page;
+    const empresas = [];
+
     try {
-      browser = await puppeteer.launch({
-        headless: false,
-        defaultViewport: { width: 1280, height: 800 },
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      const response = await axios.get(this.baseUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+        timeout: 30000,
       });
 
-      console.log("📱 Browser iniciado com sucesso");
-
-      page = await browser.newPage();
-      await page.setDefaultTimeout(60000);
-      await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-      );
-
-      console.log("🌐 Acessando página principal...");
-      await page.goto(this.baseUrl, { waitUntil: "networkidle2" });
-      await this.delay(2000);
-
-      const categorias = await this.encontrarCategorias(page);
-      console.log(`📋 Encontradas ${categorias.length} categorias`);
+      const $ = cheerio.load(response.data);
+      const categorias = this.encontrarCategorias($);
 
       for (let i = 0; i < categorias.length; i++) {
         const categoria = categorias[i];
-        console.log(`\n📂 Processando categoria ${i + 1}/${categorias.length}: ${categoria.nome}`);
+        console.log(`📂 Categoria ${i + 1}/${categorias.length}: ${categoria.nome}`);
 
-        await this.processarCategoria(page, categoria, browser);
-        await this.delay(1000);
-      }
-
-      console.log(`\n✅ Scraping concluído!`);
-      console.log(`📊 Total de empresas processadas: ${this.empresas.length}`);
-      console.log(`✅ Detalhes coletados com sucesso: ${this.detalhesColetados}`);
-      console.log(`❌ Erros ao coletar detalhes: ${this.errosDetalhes}`);
-
-      await this.salvarPlanilha();
-    } catch (error) {
-      console.error("❌ Erro fatal durante o scraping:", error);
-    } finally {
-      if (browser) await browser.close().catch(() => {});
-    }
-  }
-
-  async encontrarCategorias(page) {
-    return await page.evaluate(() => {
-      const categorias = [];
-      const acordeoes = document.querySelectorAll(".single-faq");
-      acordeoes.forEach((acordeao, index) => {
-        const titulo = acordeao.querySelector(".faq-title a");
-        if (titulo) {
-          const nomeCompleto = titulo.textContent.trim();
-          const nome = nomeCompleto.replace(/\s*\(\d+\)\s*$/, "").replace(/^\s*[\+\-]\s*/, "");
-          const href = titulo.getAttribute("href");
-          if (href) {
-            categorias.push({ index, nome, href });
-          }
+        try {
+          const empresasCategoria = await this.processarCategoria($, categoria);
+          empresas.push(...empresasCategoria);
+        } catch (error) {
+          console.error(`❌ Erro categoria "${categoria.nome}":`, error.message);
         }
-      });
-      return categorias;
-    });
+      }
+    } catch (error) {
+      console.error("❌ Erro fatal ACICAP:", error.message);
+    }
+
+    console.log(`✅ ACICAP concluído! Total: ${empresas.length}`);
+    return empresas;
   }
 
-  async processarCategoria(page, categoria, browser) {
-    try {
-      const linkCategoria = await page.$(`a[href="${categoria.href}"]`);
-      if (linkCategoria) {
-        await linkCategoria.click();
-        await this.delay(2000);
-      } else {
-        console.warn(`  ⚠️ Categoria "${categoria.nome}" não encontrada para clique.`);
-        return;
+  encontrarCategorias($) {
+    const categorias = [];
+    $(".single-faq").each((index, acordeao) => {
+      const titulo = $(acordeao).find(".faq-title a");
+      if (titulo.length) {
+        const nomeCompleto = titulo.text().trim();
+        const nome = nomeCompleto.replace(/\s*\(\d+\)\s*$/, "").replace(/^\s*[\+\-]\s*/, "");
+        const href = titulo.attr("href");
+        if (href && nome) {
+          categorias.push({ index, nome, href });
+        }
       }
+    });
+    return categorias;
+  }
 
-      const empresasCategoria = await page.evaluate(
-        (categoriaNome, categoriaHref) => {
-          const empresas = [];
+  async processarCategoria($, categoria) {
+    const empresasCategoria = [];
 
-          // ======================================================================
-          // CORREÇÃO APLICADA:
-          // Usamos um seletor de atributo [id="..."] para selecionar o painel.
-          // Isso é mais robusto para IDs que são apenas números.
-          // 1. Pega o href (ex: "#98")
-          // 2. Remove o "#" para obter o ID (ex: "98")
-          // 3. Monta o seletor `[id="98"]`
-          const idDoPainel = categoriaHref.substring(1);
-          const painelCategoria = document.querySelector(`[id="${idDoPainel}"]`);
-          // ======================================================================
+    try {
+      const idDoPainel = categoria.href.substring(1);
+      const painelCategoria = $(`[id="${idDoPainel}"]`);
 
-          if (painelCategoria) {
-            const linhas = painelCategoria.querySelectorAll("tbody tr");
-            linhas.forEach((linha) => {
-              const colunas = linha.querySelectorAll("td");
-              if (colunas.length >= 3) {
-                const nome = colunas[0]?.textContent?.trim() || "";
-                const telefone = colunas[1]?.textContent?.trim() || "";
-                const linkDetalhes = colunas[2]?.querySelector("a")?.href || "";
+      if (painelCategoria.length) {
+        const linhas = painelCategoria.find("tbody tr");
 
-                if (nome && linkDetalhes) {
-                  empresas.push({ nome, telefone, linkDetalhes, categoria: categoriaNome });
+        for (let j = 0; j < linhas.length; j++) {
+          const linha = linhas.eq(j);
+          const colunas = linha.find("td");
+
+          if (colunas.length >= 3) {
+            const nomeTabela = colunas.eq(0).text().trim() || "";
+            const telefoneTabela = colunas.eq(1).text().trim() || "";
+            const linkDetalhes = colunas.eq(2).find("a").attr("href") || "";
+
+            if (nomeTabela && linkDetalhes) {
+              const detalhes = await this.coletarDetalhesEmpresa(linkDetalhes);
+
+              // Extrai o CEP da string de endereço
+              const enderecoCompleto = detalhes.endereco || null;
+              let cep = null;
+              if (enderecoCompleto) {
+                const cepMatch = enderecoCompleto.match(/\d{5}-\d{3}/);
+                if (cepMatch) {
+                  cep = cepMatch[0];
                 }
               }
-            });
+
+              // Limpa o endereço para remover CEP e a cidade
+              const enderecoLimpo = this.limparEndereco(enderecoCompleto);
+
+              empresasCategoria.push({
+                nome: detalhes.nome || nomeTabela,
+                telefone: detalhes.telefoneCompleto || telefoneTabela || null,
+                endereco: enderecoLimpo,
+                cep: cep,
+                cidade: "Capitão Leônidas Marques",
+              });
+
+              await new Promise((resolve) => setTimeout(resolve, 300));
+            }
           }
-          return empresas;
+        }
+      }
+    } catch (error) {
+      console.error(`❌ Erro categoria ${categoria.nome}:`, error.message);
+      return [];
+    }
+
+    return empresasCategoria;
+  }
+
+  async coletarDetalhesEmpresa(linkDetalhes) {
+    try {
+      const url = linkDetalhes.startsWith("http") ? linkDetalhes : BASE_URL + linkDetalhes;
+      const response = await axios.get(url, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
-        categoria.nome,
-        categoria.href
-      );
-
-      if (empresasCategoria.length > 0) {
-        console.log(`  📦 Encontradas ${empresasCategoria.length} empresas na categoria`);
-
-        for (let j = 0; j < empresasCategoria.length; j++) {
-          const empresa = empresasCategoria[j];
-          console.log(
-            `    🔍 Coletando detalhes ${j + 1}/${empresasCategoria.length}: ${empresa.nome}`
-          );
-          const detalhes = await this.coletarDetalhesEmpresa(empresa.linkDetalhes, browser);
-          const empresaCompleta = { ...empresa, ...detalhes, dataColeta: new Date().toISOString() };
-          this.empresas.push(empresaCompleta);
-          await this.delay(500);
-        }
-      } else {
-        console.log(`  ℹ️ Nenhuma empresa encontrada na categoria "${categoria.nome}".`);
-      }
-
-      if (linkCategoria) {
-        await linkCategoria.click();
-        await this.delay(1000);
-      }
-    } catch (error) {
-      console.error(
-        `❌ Erro ao processar categoria ${categoria.nome} (href: ${categoria.href}):`,
-        error.message
-      );
-      console.error(error.stack);
-    }
-  }
-
-  async coletarDetalhesEmpresa(linkDetalhes, browser) {
-    let paginaDetalhes;
-    try {
-      paginaDetalhes = await browser.newPage();
-      await paginaDetalhes.setDefaultTimeout(30000);
-      await paginaDetalhes.goto(linkDetalhes, { waitUntil: "networkidle2" });
-      await this.delay(1000);
-
-      const detalhes = await paginaDetalhes.evaluate(() => {
-        const dados = {
-          endereco: "Não informado",
-          email: "Não informado",
-          site: "Não informado",
-          descricao: "Não informado",
-          responsavel: "Não informado",
-          telefoneCompleto: "Não informado",
-          whatsapp: "Não informado",
-          facebook: "Não informado",
-          instagram: "Não informado",
-        };
-
-        const container = document.querySelector(".single-project-content");
-        if (!container) return dados;
-
-        const p_elements = Array.from(container.querySelectorAll("p"));
-
-        p_elements.forEach((p) => {
-          const texto = p.textContent.trim();
-          const html = p.innerHTML;
-
-          if (html.includes("fa-map-marker")) dados.endereco = texto;
-          if (html.includes("fa-user")) dados.responsavel = texto;
-          if (html.includes("fa-phone")) dados.telefoneCompleto = texto;
-          if (html.includes("fa-whatsapp")) dados.whatsapp = texto;
-          if (html.includes("fa-envelope"))
-            dados.email = p.querySelector("a")?.textContent?.trim() || texto;
-          if (html.includes("fa-globe")) dados.site = p.querySelector("a")?.href || texto;
-          if (html.includes("fa-facebook")) dados.facebook = p.querySelector("a")?.href || texto;
-          if (html.includes("fa-instagram")) dados.instagram = p.querySelector("a")?.href || texto;
-        });
-
-        const descricaoElement = container.querySelector(".text-justify");
-        if (descricaoElement) {
-          dados.descricao = descricaoElement.textContent.trim();
-        }
-
-        return dados;
+        timeout: 30000,
       });
 
-      this.detalhesColetados++;
-      return detalhes;
-    } catch (error) {
-      console.error(`  Erro ao coletar detalhes de ${linkDetalhes}: ${error.message}`);
-      this.errosDetalhes++;
-      return {
-        endereco: "Erro ao coletar",
-        descricao: "Erro ao coletar detalhes",
-        erro: error.message,
+      const $ = cheerio.load(response.data);
+      const dados = {
+        nome: null,
+        endereco: null,
+        telefoneCompleto: null,
       };
-    } finally {
-      if (paginaDetalhes) await paginaDetalhes.close().catch(() => {});
-    }
-  }
 
-  async salvarPlanilha() {
-    try {
-      if (this.empresas.length === 0) {
-        console.log("\n Nenhuma empresa foi coletada. O arquivo não será gerado.");
-        return;
+      // --- INÍCIO DA CORREÇÃO ---
+      // Pega o nome da empresa, que geralmente está em um H2
+      dados.nome = $("h2.mb-3").first().text().trim() || null;
+
+      // Busca os dados no container correto (div.small-list-feature) e nos elementos <li>
+      const infoContainer = $(".small-list-feature");
+      if (infoContainer.length) {
+        infoContainer.find("li").each((_, li) => {
+          // Itera sobre cada item da lista (<li>)
+          const elemento = $(li);
+          const texto = elemento.text().trim();
+          const html = elemento.html();
+
+          // Verifica se o item da lista contém o ícone de mapa
+          if (html && html.includes("fa-map-marker")) {
+            dados.endereco = texto;
+          }
+          // Verifica se o item da lista contém o ícone de telefone
+          if (html && html.includes("fa-phone")) {
+            dados.telefoneCompleto = texto;
+          }
+        });
       }
+      // --- FIM DA CORREÇÃO ---
 
-      const dadosParaPlanilha = this.empresas.map((empresa, index) => ({
-        ID: index + 1,
-        "Nome da Empresa": empresa.nome || "Não informado",
-        Categoria: empresa.categoria || "Não informado",
-        "Telefone (Lista)": empresa.telefone || "Não informado",
-        "Telefone (Detalhes)": empresa.telefoneCompleto || "Não informado",
-        WhatsApp: empresa.whatsapp || "Não informado",
-        Email: empresa.email || "Não informado",
-        Site: empresa.site || "Não informado",
-        Endereço: empresa.endereco || "Não informado",
-        Responsável: empresa.responsavel || "Não informado",
-        Descrição: empresa.descricao || "Não informado",
-        Facebook: empresa.facebook || "Não informado",
-        Instagram: empresa.instagram || "Não informado",
-        "Link Detalhes": empresa.linkDetalhes || "Não informado",
-        "Data Coleta": new Date(empresa.dataColeta).toLocaleDateString("pt-BR"),
-        "Hora Coleta": new Date(empresa.dataColeta).toLocaleTimeString("pt-BR"),
-      }));
-
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(dadosParaPlanilha);
-
-      worksheet["!cols"] = [
-        { wch: 5 },
-        { wch: 40 },
-        { wch: 25 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 30 },
-        { wch: 30 },
-        { wch: 50 },
-        { wch: 30 },
-        { wch: 60 },
-        { wch: 40 },
-        { wch: 40 },
-        { wch: 50 },
-        { wch: 12 },
-        { wch: 10 },
-      ];
-
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Empresas ACICAP");
-
-      const timestamp = new Date().toISOString().split("T")[0];
-      const nomeArquivo = `acicap_empresas_${timestamp}.xlsx`;
-      XLSX.writeFile(workbook, nomeArquivo);
-
-      console.log(`\n💾 Planilha salva com sucesso como: ${nomeArquivo}`);
-
-      const nomeJson = `acicap_empresas_${timestamp}.json`;
-      fs.writeFileSync(nomeJson, JSON.stringify(this.empresas, null, 2), "utf8");
-      console.log(`💾 Backup JSON salvo como: ${nomeJson}`);
-
-      this.gerarRelatorio();
+      return dados;
     } catch (error) {
-      console.error("❌ Erro ao salvar a planilha:", error);
+      // Em caso de erro na requisição, retorna objeto vazio para não quebrar o processo
+      console.error(`   - Erro ao coletar detalhes de ${linkDetalhes}: ${error.message}`);
+      return {
+        nome: null,
+        endereco: null,
+        telefoneCompleto: null,
+      };
     }
   }
-
-  gerarRelatorio() {
-    console.log("\n📋 RELATÓRIO DE COLETA ACICAP:");
-    console.log("===============================");
-
-    const total = this.empresas.length;
-    if (total === 0) return;
-
-    const empresasPorCategoria = this.empresas.reduce((acc, emp) => {
-      const cat = emp.categoria || "Indefinido";
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {});
-
-    console.log("\n📊 EMPRESAS POR CATEGORIA:");
-    Object.keys(empresasPorCategoria)
-      .sort()
-      .forEach((cat) => {
-        console.log(`- ${cat}: ${empresasPorCategoria[cat]} empresas`);
-      });
-
-    const comEmail = this.empresas.filter(
-      (e) => e.email && !e.email.includes("Não informado")
-    ).length;
-    const comSite = this.empresas.filter((e) => e.site && !e.site.includes("Não informado")).length;
-    const comEndereco = this.empresas.filter(
-      (e) => e.endereco && !e.endereco.includes("Não informado")
-    ).length;
-    const comWhatsApp = this.empresas.filter(
-      (e) => e.whatsapp && !e.whatsapp.includes("Não informado")
-    ).length;
-
-    console.log("\n📈 ESTATÍSTICAS DE DADOS:");
-    console.log(`- Total de empresas: ${total}`);
-    console.log(`- Com email: ${comEmail} (${((comEmail / total) * 100).toFixed(1)}%)`);
-    console.log(`- Com site: ${comSite} (${((comSite / total) * 100).toFixed(1)}%)`);
-    console.log(`- Com endereço: ${comEndereco} (${((comEndereco / total) * 100).toFixed(1)}%)`);
-    console.log(`- Com WhatsApp: ${comWhatsApp} (${((comWhatsApp / total) * 100).toFixed(1)}%)`);
-  }
-
-  delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 }
 
-async function executarScraping() {
+async function runAcicapScraper() {
   const scraper = new AcicapScraper();
-  await scraper.iniciarScraping();
+  return await scraper.iniciarScraping();
 }
 
-if (require.main === module) {
-  executarScraping().catch(console.error);
-}
-
-module.exports = AcicapScraper;
+module.exports = runAcicapScraper;
+  

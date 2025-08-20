@@ -1,0 +1,27 @@
+{
+  "name": "projeto-webscrap-cidades",
+  "version": "1.0.0",
+  "description": "Web scraper para coletar dados de empresas de associações comerciais em diferentes cidades.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "webscraping",
+    "nodejs",
+    "puppeteer",
+    "axios",
+    "cheerio",
+    "xlsx",
+    "dados",
+    "empresas"
+  ],
+  "author": "Seu Nome Aqui",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "puppeteer": "^22.13.1",
+    "xlsx": "^0.18.5"
+  }
+}
