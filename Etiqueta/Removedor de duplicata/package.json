@@ -1,0 +1,20 @@
+{
+  "name": "remover-duplicatas-excel",
+  "version": "1.0.0",
+  "description": "Um script para remover duplicatas de um arquivo XLSX.",
+  "main": "remover_duplicatas.js",
+  "scripts": {
+    "start": "node remover_duplicatas.js"
+  },
+  "keywords": [
+    "xlsx",
+    "excel",
+    "duplicatas",
+    "script"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
