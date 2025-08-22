@@ -7,64 +7,67 @@ const runMarechalScraper = require("./marechal/scraper-acimacar");
 const SantaHelenaModule = require("./santaHelena/script");
 const ToledoModule = require("./toledo/script");
 
-async function runAllScrapers() {
+// Mapeamento das cidades disponíveis
+const AVAILABLE_CITIES = {
+  capitao: { name: "ACICAP (Capitão)", scraper: runCapitaoScraper },
+  corbelia: { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper },
+  marechal: { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper },
+  santahelena: { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule },
+  toledo: { name: "ACIT (Toledo)", scraper: ToledoModule }
+};
+
+async function runScrapers(selectedCities = null) {
+  const citiesToRun = selectedCities || Object.keys(AVAILABLE_CITIES);
+  
   console.log("==========================================");
-  console.log("🚀 INICIANDO O PROCESSO DE WEBSCRAP COMPLETO");
+  if (selectedCities) {
+    console.log(`🚀 INICIANDO WEBSCRAP PARA: ${citiesToRun.map(city => AVAILABLE_CITIES[city]?.name || city).join(", ")}`);
+  } else {
+    console.log("🚀 INICIANDO O PROCESSO DE WEBSCRAP COMPLETO");
+  }
   console.log("==========================================");
 
   let allCompanies = [];
+  const scraperPromises = [];
 
-  try {
-    const capitaoData = await runCapitaoScraper();
-    allCompanies.push(...capitaoData);
-    console.log(`\n🎉 ACICAP (Capitão) concluído. Total: ${capitaoData.length} empresas.`);
-    console.log("------------------------------------------");
-  } catch (error) {
-    console.error("\n❌ Erro ao executar o scraper de Capitão:", error.message);
-    console.log("------------------------------------------");
+  // Executa todos os scrapers selecionados em paralelo
+  for (const cityKey of citiesToRun) {
+    if (!AVAILABLE_CITIES[cityKey]) {
+      console.error(`\n❌ Cidade '${cityKey}' não encontrada. Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
+      continue;
+    }
+
+    const { name, scraper } = AVAILABLE_CITIES[cityKey];
+    
+    const scraperPromise = (async () => {
+      try {
+        let data;
+        if (cityKey === 'santahelena') {
+          const scraperInstance = new scraper();
+          data = await scraperInstance.run();
+        } else {
+          data = await scraper();
+        }
+        
+        console.log(`\n🎉 ${name} concluído. Total: ${data.length} empresas.`);
+        console.log("------------------------------------------");
+        return data;
+      } catch (error) {
+        console.error(`\n❌ Erro ao executar o scraper de ${name}:`, error.message);
+        console.log("------------------------------------------");
+        return [];
+      }
+    })();
+
+    scraperPromises.push(scraperPromise);
   }
 
-  try {
-    const corbeliaData = await runCorbeliaScraper();
-    allCompanies.push(...corbeliaData);
-    console.log(`\n🎉 ACICORB (Corbélia) concluído. Total: ${corbeliaData.length} empresas.`);
-    console.log("------------------------------------------");
-  } catch (error) {
-    console.error("\n❌ Erro ao executar o scraper de Corbélia:", error.message);
-    console.log("------------------------------------------");
-  }
-
-  try {
-    const marechalData = await runMarechalScraper();
-    allCompanies.push(...marechalData);
-    console.log(`\n🎉 ACIMACAR (Marechal) concluído. Total: ${marechalData.length} empresas.`);
-    console.log("------------------------------------------");
-  } catch (error) {
-    console.error("\n❌ Erro ao executar o scraper de Marechal:", error.message);
-    console.log("------------------------------------------");
-  }
-
-  try {
-    const santaHelenaScraper = new SantaHelenaModule();
-    const santaHelenaData = await santaHelenaScraper.run();
-    allCompanies.push(...santaHelenaData);
-    console.log(
-      `\n🎉 ACISASH (Santa Helena) concluído. Total: ${santaHelenaData.length} empresas.`
-    );
-    console.log("------------------------------------------");
-  } catch (error) {
-    console.error("\n❌ Erro ao executar o scraper de Santa Helena:", error.message);
-    console.log("------------------------------------------");
-  }
-
-  try {
-    const toledoData = await ToledoModule();
-    allCompanies.push(...toledoData);
-    console.log(`\n🎉 ACIT (Toledo) concluído. Total: ${toledoData.length} empresas.`);
-    console.log("------------------------------------------");
-  } catch (error) {
-    console.error("\n❌ Erro ao executar o scraper de Toledo:", error.message);
-    console.log("------------------------------------------");
+  // Aguarda todos os scrapers terminarem
+  const results = await Promise.all(scraperPromises);
+  
+  // Consolida todos os resultados
+  for (const data of results) {
+    allCompanies.push(...data);
   }
 
   // Ajustado para incluir o campo 'cidade'
@@ -83,6 +86,26 @@ async function runAllScrapers() {
   } else {
     console.log("\n⚠️ Nenhuma empresa coletada. Nenhum arquivo será gerado.");
   }
+}
+
+// Função para manter compatibilidade
+async function runAllScrapers() {
+  return await runScrapers();
+}
+
+// Função para mostrar ajuda
+function showHelp() {
+  console.log("\n📋 USO DO SCRIPT:");
+  console.log("node index.js [cidades...]");
+  console.log("\n🏙️ CIDADES DISPONÍVEIS:");
+  Object.keys(AVAILABLE_CITIES).forEach(key => {
+    console.log(`  - ${key}: ${AVAILABLE_CITIES[key].name}`);
+  });
+  console.log("\n📝 EXEMPLOS:");
+  console.log("  node index.js                    # Executa todas as cidades");
+  console.log("  node index.js toledo             # Executa apenas Toledo");
+  console.log("  node index.js toledo capitao     # Executa Toledo e Capitão");
+  console.log("  node index.js --help             # Mostra esta ajuda");
 }
 
 function saveDataToFile(data) {
@@ -124,10 +147,28 @@ function saveDataToFile(data) {
 }
 
 if (require.main === module) {
-  runAllScrapers().catch((error) => {
-    console.error("❌ Erro fatal no processo principal:", error.message);
-    process.exit(1);
-  });
+  const args = process.argv.slice(2);
+  
+  // Verifica se é pedido de ajuda
+  if (args.includes('--help') || args.includes('-h')) {
+    showHelp();
+    process.exit(0);
+  }
+  
+  // Se não há argumentos, executa todas as cidades
+  if (args.length === 0) {
+    runAllScrapers().catch((error) => {
+      console.error("❌ Erro fatal no processo principal:", error.message);
+      process.exit(1);
+    });
+  } else {
+    // Executa apenas as cidades especificadas
+    const selectedCities = args.map(city => city.toLowerCase());
+    runScrapers(selectedCities).catch((error) => {
+      console.error("❌ Erro fatal no processo principal:", error.message);
+      process.exit(1);
+    });
+  }
 }
 
-module.exports = { runAllScrapers, saveDataToFile };
+module.exports = { runAllScrapers, runScrapers, saveDataToFile, AVAILABLE_CITIES };

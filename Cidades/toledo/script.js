@@ -1,5 +1,6 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const chalk = require("chalk");
 
 const BASE_URL = "https://acit.org.br/associados/";
 
@@ -41,6 +42,7 @@ async function getCompanyLinks(page = 1, letra = "") {
     url = page === 1 ? BASE_URL : `${BASE_URL}page/${page}/`;
   }
   try {
+    console.log(chalk.gray(`    📄 Buscando página ${page} da letra ${letra.toUpperCase()}...`));
     const res = await axios.get(url);
     const $ = cheerio.load(res.data);
     const links = [];
@@ -51,14 +53,17 @@ async function getCompanyLinks(page = 1, letra = "") {
         links.push({ name, url: href });
       }
     });
+    if (links.length > 0) {
+      console.log(chalk.blue(`    ✓ Encontradas ${links.length} empresas na página ${page}`));
+    }
     return links;
   } catch (err) {
-    console.error(`Erro ao buscar página ${page} da letra ${letra}: ${err.message}`);
+    console.error(chalk.red(`    ❌ Erro ao buscar página ${page} da letra ${letra}: ${err.message}`));
     return [];
   }
 }
 
-async function getCompanyDetails(company) {
+async function getCompanyDetails(company, currentIndex, totalCompanies) {
   try {
     const res = await axios.get(company.url);
     const $ = cheerio.load(res.data);
@@ -78,41 +83,75 @@ async function getCompanyDetails(company) {
       }
     });
 
-    let endereco = enderecoCompleto;
+    let endereco = enderecoCompleto.split(' CEP:')[0];
     let cep = null;
 
     if (enderecoCompleto) {
       const cepMatch = enderecoCompleto.match(/\d{5}-\d{3}/);
       if (cepMatch) {
         cep = cepMatch[0];
-        endereco = enderecoCompleto.replace(cepMatch[0], "").trim();
       }
     }
 
+    const progress = ((currentIndex / totalCompanies) * 100).toFixed(1);
+    console.log(chalk.green(`      ✓ [${progress}%] ${name} - Dados coletados`));
+
     return { nome: name, endereco, cep, telefone, cidade: "Toledo" };
   } catch (err) {
-    console.error(`Erro ao buscar empresa ${company.name}: ${err.message}`);
-    return { nome: company.name, endereco: null, cep: null, telefone: null };
+    console.error(chalk.red(`      ❌ Erro ao buscar empresa ${company.name}: ${err.message}`));
+    return { nome: company.name, endereco: null, cep: null, telefone: null, cidade: "Toledo" };
   }
 }
 
 async function runToledoScraper() {
-  console.log("🚀 Iniciando web scraping da ACIT...");
+  console.log(chalk.cyan.bold("🚀 Iniciando web scraping da ACIT Toledo..."));
+  console.log(chalk.gray("═".repeat(50)));
+  
   let allCompanies = [];
-  for (const letra of LETTERS) {
+  let allCompanyLinks = [];
+  
+  // Primeira fase: Coletar todos os links
+  console.log(chalk.yellow("📋 Fase 1: Coletando links das empresas..."));
+  
+  for (let i = 0; i < LETTERS.length; i++) {
+    const letra = LETTERS[i];
     let page = 1;
-    console.log(`Processando letra: ${letra.toUpperCase()}`);
+    const letraProgress = ((i / LETTERS.length) * 100).toFixed(1);
+    console.log(chalk.magenta(`\n  🔤 [${letraProgress}%] Processando letra: ${letra.toUpperCase()}`));
+    
     while (true) {
       const companies = await getCompanyLinks(page, letra);
       if (companies.length === 0) break;
-      for (const company of companies) {
-        const details = await getCompanyDetails(company);
-        allCompanies.push(details);
-      }
+      allCompanyLinks.push(...companies);
       page++;
     }
+    
+    console.log(chalk.blue(`    ✓ Letra ${letra.toUpperCase()} concluída. Total de links coletados: ${allCompanyLinks.length}`));
   }
-  console.log(`✅ Scraping da ACIT concluído! ${allCompanies.length} empresas encontradas.`);
+  
+  console.log(chalk.green(`\n✅ Fase 1 concluída! ${allCompanyLinks.length} links de empresas coletados.`));
+  console.log(chalk.gray("═".repeat(50)));
+  
+  // Segunda fase: Coletar detalhes das empresas
+  console.log(chalk.yellow("📊 Fase 2: Coletando detalhes das empresas..."));
+  
+  for (let i = 0; i < allCompanyLinks.length; i++) {
+    const company = allCompanyLinks[i];
+    const details = await getCompanyDetails(company, i + 1, allCompanyLinks.length);
+    allCompanies.push(details);
+    
+    // Log de progresso a cada 10 empresas
+    if ((i + 1) % 10 === 0 || i === allCompanyLinks.length - 1) {
+      const progress = (((i + 1) / allCompanyLinks.length) * 100).toFixed(1);
+      console.log(chalk.cyan(`    📈 Progresso geral: ${i + 1}/${allCompanyLinks.length} empresas (${progress}%)\n`));
+    }
+  }
+  
+  console.log(chalk.gray("═".repeat(50)));
+  console.log(chalk.green.bold(`✅ Scraping da ACIT Toledo concluído!`));
+  console.log(chalk.white(`📊 Total de empresas processadas: ${chalk.bold.green(allCompanies.length)}`));
+  console.log(chalk.gray("═".repeat(50)));
+  
   return allCompanies;
 }
 
