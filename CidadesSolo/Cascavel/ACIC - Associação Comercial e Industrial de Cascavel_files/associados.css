@@ -1,0 +1,214 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+body {
+    background: #f6f6f6;
+}
+/* ------------------------ Associados ---------------------------- */
+.associados {
+    position: relative;
+}
+
+.lista-associados {
+    position: unset;
+    background: #76d3dd;
+    padding: 90px 20px 90px 0px;
+}
+
+.lista-associados::before {
+    content: '';
+    display: block;
+    background: #76d3dd;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 50%;
+    height: 100%;
+    z-index: -2;
+}
+@media screen and (max-width: 767px) { 
+    .lista-associados {
+        padding: 20px 20px;
+    }
+
+    .lista-associados::before {
+        width: 100%;
+        height: calc(50% + 4px);
+    }
+}
+
+.lista-associados h1 {
+    font-weight: bold;
+    color: #094b6b;
+    font-size: 1.437em;
+}
+
+.lista-associados p {
+    font-weight: normal;
+    color: #094b6b;
+    font-size: 0.75em;
+    margin-bottom: 0px;
+}
+
+.table-associados tr {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.lista-associados .associado {
+    padding-right: 10px;
+    margin-right: 40px;
+}
+
+.lista-associados .associado h2 {
+    font-weight: bold;
+    color: #094b6b;
+    text-transform: uppercase;
+    font-size: 0.875em;
+    margin-bottom: 0px;
+}
+
+.lista-associados .associado span {
+    font-size: 0.75em;
+    color: #094b6b;
+}
+
+/* -------- Datatable */
+table.dataTable {
+    width: 100%;
+}
+
+.paginate_button {
+    border-color: #094b6b;
+    background: #f6f6f6;
+}
+
+.paginate_button a {
+    font-family: "GalanoClassic";
+    color:#094b6b;
+    background: #f6f6f6;
+    font-weight: bold;
+    font-size: 0.75em;
+}
+
+.page-item.active .page-link {
+    z-index: 1;
+    color: #76d3dd;
+    background-color: #094b6b;
+    border-color: #094b6b;
+
+}
+
+.page-item.disabled .page-link {
+    background: #f6f6f6;
+}
+
+/* -------------------------- Busca -------------------------------------- */
+.busca {
+    padding: 90px 60px;
+}
+
+.busca-nome {
+    margin-bottom: 40px;
+}
+
+.busca-nome span {
+    font-weight: bold;
+    color: #094b6b;
+    text-transform: uppercase;
+}
+
+.busca-nome input {
+    border: none;
+    border-radius: 0;
+    border-bottom: 2px solid #094b6b;
+    background: transparent;
+    font-family: 'GalanoClassic';
+    color: #094b6b;
+    font-size: 0.75em;
+    padding: 2px 10px;
+    margin-left: 10px;
+}
+
+.busca-nome button {
+}
+
+.busca-letra span {
+    font-weight: bold;
+    color: #094b6b;
+    text-transform: uppercase;
+}
+
+.busca-letra ul {
+    list-style: none;
+    padding-left: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    margin-top: 10px;
+    margin-left: -10px;
+}
+
+.busca-letra ul li {
+    margin: 10px;
+}
+
+.busca-letra ul li a {
+    display: inline-block;
+    background: #094b6b;
+    color: #fff;
+    font-size: 0.80em;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.busca-letra ul li a:hover, .busca-letra ul li.active a {
+    background: #76d3dd;
+    color: #094b6b;
+}
+
+
+/* ------------ Start Faça Parte ------------ */
+.facaparte {
+    background: url('../../../img/bg_facaparte3.png') no-repeat center center;
+    background-size: cover;
+}
+
+
+.fcparte-start {
+    font-family: 'GalanoClassic';
+    font-weight: bold;
+    font-size: 1.125em;
+    color: #fff;
+}
+
+.fcparte-middle {
+    font-family: 'GalanoClassic';
+    font-weight: normal;
+    font-size: 1em;
+    color: #fff;
+}
+
+.fcparte-button button {
+    display: inline-block;
+    background: #fff;
+    border: none;
+    color: #094b6b;
+    padding: 5px 15px;
+    text-transform: uppercase;
+    font-family: 'GalanoClassic';
+    font-weight: bold;
+    font-size: 1em;
+      
+}

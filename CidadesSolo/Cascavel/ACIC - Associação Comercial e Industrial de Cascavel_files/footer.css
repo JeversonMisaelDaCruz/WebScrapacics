@@ -1,0 +1,75 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+.footer {
+    background: #fff;
+}
+
+.footer-endereco {
+    color: #094b6b;
+    font-family: "GalanoClassic";
+    font-size: 0.875em;
+    font-weight: lighter;
+    line-height: 1.662;
+}
+
+.footer-link {
+    color: #094b6b !important;
+    font-family: "Myriad Pro";
+    font-size: 1em;
+    font-weight: bold;
+    line-height: 2;
+}
+
+.div-img-footer {
+    display: inline-block;
+    width: 30px;
+}
+
+.direitos {
+    position: relative;
+}
+
+.direitos span {
+    display: block;
+    background: #76d3dd;
+    padding: 10px 0px;
+    text-align: center;
+    color: #094b6b;
+    font-family: "GalanoClassic";
+    font-size: 0.775em;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+.direitos a {
+    color: #094b6b;
+}
+
+@media screen and (min-width: 992px) {
+    .direitos span {
+        padding-left: 70px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .direitos span {
+        padding-left: 0px;
+    }
+}
+
+@media screen and (min-width: 1280px) {
+    .direitos span {
+        padding-right: 25px;
+    }
+}
+
+@media screen and (min-width: 1370px) {
+    .direitos span {
+        padding-right: 55px;
+    }
+}

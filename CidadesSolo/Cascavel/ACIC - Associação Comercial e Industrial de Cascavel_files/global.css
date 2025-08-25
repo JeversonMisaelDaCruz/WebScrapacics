@@ -1,0 +1,145 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+body {
+    font-family: 'GalanoClassic';
+}
+
+.separator {
+    color: #76d3dd;
+    font-weight: bolder;
+    font-size: 22px;
+}
+
+/* Checkbox */
+.custom-control-input:not(:disabled):active~.custom-control-label::before {
+    color: #094b6b;
+    background-color: #33bcee;
+    border-color: #33bcee;
+    -webkit-box-shadow: none;
+            box-shadow: none;
+}
+.custom-control-input:not(:disabled):active~.custom-control-label::before {
+    color: #094b6b;
+    background-color: #33bcee;
+    border-color: #33bcee;
+}
+.custom-control-input:checked~.custom-control-label::before {
+    color: #094b6b;
+    border-color: #33bcee;
+    background-color: #33bcee;
+    -webkit-box-shadow: none;
+            box-shadow: none;
+}
+.custom-control-input:checked~.custom-control-label::before {
+    color: #fff;
+    border-color: #33bcee;
+    background-color: #33bcee;
+}
+.custom-checkbox .custom-control-label::before {
+    border-radius: 0;
+}
+
+
+/* --------------- Modificações dos Botões ------------------- */
+.btn-success {
+    color: #094b6b;
+    text-transform: uppercase;
+    font-weight: bold;
+    background-color: #b1f551;
+    border-color: #b1f551;
+    -webkit-box-shadow: none;
+            box-shadow: none;
+    border-radius: 0;
+}
+
+.btn-success:hover {
+    color: #083a52;
+    background-color: #70a91e;
+    border-color: #70a91e;
+}
+
+.btn-success:not(:disabled):not(.disabled).active, .btn-success:not(:disabled):not(.disabled):active, .show>.btn-success.dropdown-toggle {
+    color: #083a52;
+    background-color: #70a91e;
+    border-color: #70a91e;
+}
+
+/* ------------------------------- Modal ------------------------------------- */
+.modal input[type='text'], .modal input[type='email'], .modal textarea {
+    border-radius: 0;
+    border-color: #68cddc;
+    color: #1c5285;
+}
+
+.modal ::-webkit-input-placeholder {
+    color: #1c5285;
+}
+
+.modal ::-moz-placeholder {
+    color: #1c5285;
+}
+
+.modal :-ms-input-placeholder {
+    color: #1c5285;
+}
+
+.modal ::-ms-input-placeholder {
+    color: #1c5285;
+}
+
+.modal ::placeholder {
+    color: #1c5285;
+}
+
+.modal .btn-primary {
+    text-transform: uppercase;
+    font-weight: bold;
+    background-color: #68cddc;
+    border-color: #68cddc;
+    color: #1c5285;
+    border-radius: 0px;
+    font-size: 1em;
+    padding: 10px 40px;
+}
+
+.modal .btn-primary:hover, .modal .btn-primary:active {
+    background-color: #1c5285;
+    border-color: #1c5285;
+    color: #68cddc;
+}
+
+/* ======== Modal Inscrição -------------------- */
+.radio-inscricao {
+    position: relative;
+    background: #fff;
+    border: 1px solid;
+    border-color: #68cddc;
+    padding: 5px 10px;
+    -webkit-box-shadow: 2px 2px 2px #ccc;
+            box-shadow: 2px 2px 2px #ccc;
+    color: #1c5285;
+    font-weight: normal;
+    font-size: 0.9em;
+}
+
+.radio-inscricao:hover, .radio-inscricao-hover {
+    background-color: #1c5285;
+    color: #fff;
+    border-color: #1c5285;
+    cursor: pointer;
+}
+
+.radio-inscricao input[type="radio"] {
+    /* display: none; */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    visibility: hidden;
+}

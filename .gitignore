@@ -9,4 +9,10 @@ coverage
 .env
 *.log
 *.tmp
+.xlsx
+.xlsx
+<<<<<<< Updated upstream
 resultados
+=======
+.git
+>>>>>>> Stashed changes

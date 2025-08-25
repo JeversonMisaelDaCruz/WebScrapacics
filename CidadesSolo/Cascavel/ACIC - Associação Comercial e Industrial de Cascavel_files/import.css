@@ -1,0 +1,143 @@
+@font-face {
+    font-family: 'GalanoClassic';
+    src: url('GalanoClassic-Regular.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GalanoClassic';
+    src: url('GalanoClassic-Bold.otf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GalanoClassic';
+    src: url('GalanoClassic-ExtraBold.otf');
+    font-weight: bolder;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GalanoClassic';
+    src: url('GalanoClassic-Medium.otf');
+    font-weight: lighter;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GalanoClassicLight';
+    src: url('GalanoClassic-Light.otf');
+}
+
+@font-face {
+    font-family: 'Myriad Pro';
+    src: url('myriad-pro-8.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Myriad Pro';
+    src: url('myriad-pro/MYRIADPRO-BOLD.OTF');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sacramento';
+    src: url('Sacramento-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Avenir';
+    src: url('avenir-black.otf');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Avenir-Medium';
+    src: url('AvenirLTStd-Medium.otf');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Avenir-Roman';
+    src: url('AvenirLTStd-Roman.otf');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'GothamRounded-Book';
+    src: url('GothamRounded-Book.otf');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Gotham-Light';
+    src: url('Gotham-Font/Gotham-Light.otf');
+    font-weight: lighter;
+}
+
+@font-face {
+    font-family: 'Gotham';
+    src: url('Gotham-Font/GothamMedium.ttf');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'Gotham-Black';
+    src: url('Gotham-Font/Gotham-Black.otf');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('Montserrat-Light.ttf');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('Montserrat-Regular.ttf');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('Montserrat-MediumItalic.ttf');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat-Medium';
+    src: url('Montserrat-Medium.ttf');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('Montserrat-Bold.ttf');
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: 'Montserrat-Semi';
+    src: url('Montserrat-SemiBold.ttf');
+}
+
+@font-face {
+    font-family: 'Montserrat-Black';
+    src: url('Montserrat-Black.ttf');
+}
+
+
+/* ----------------------------------------------- */
+/* ---------------- MODEON ---------------------- */
+/* ---------------------------------------------- */
+@font-face {
+    font-family: 'Modeon';
+    src: url('Modeon/Modeon-Regular.ttf');
+}

@@ -1,0 +1,87 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+/* Troca tamanho do container Desktop */
+@media (min-width: 1200px) {
+    header .container {
+        max-width: 1170px;
+    }
+
+    .container {
+        max-width: 1375px;
+    }
+}
+
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-nav .nav-link {
+        padding-right: 0.67rem;
+        padding-left: 0.67rem;
+    }
+}
+
+
+/* POPUP NOVIDADES */
+#popup-bottom-novidades {
+    position: fixed;
+    z-index: 10;
+    bottom: 10px;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    background: #76d3dd;
+    padding: 20px;
+    border: 2px solid #004a6d;
+    color: #004a6d;
+}
+
+#btn-close-popup-bottom-novidades {
+    position: absolute;
+    top: -15px;
+    right: -10px;
+    padding: 0;
+    background: none;
+    border: none;
+    z-index: 11;
+}
+
+#popup-bottom-novidades-info {
+    display: flex;
+    align-items: center;
+}
+
+#popup-bottom-novidades-info span {
+    margin-right: 20px;
+}
+
+#popup-bottom-novidades-info button {
+    border-radius: 0;
+    background: #004a6d;
+    border-color: #004a6d;
+    text-transform: uppercase;
+}
+
+@media screen and (max-width: 880px) {
+    #popup-bottom-novidades-info {
+        flex-direction: column;
+    }
+
+    #popup-bottom-novidades-info span {
+        text-align: center;
+    }
+
+    #popup-bottom-novidades-info button {
+        display: block;
+        margin-top: 10px;
+    }
+}
+
+
+@media screen and (max-width: 500px) {
+    #popup-bottom-novidades {
+        width: calc(100% - 40px);
+    }
+}

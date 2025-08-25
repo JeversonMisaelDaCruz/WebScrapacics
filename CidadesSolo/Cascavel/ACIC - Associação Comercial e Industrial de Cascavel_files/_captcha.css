@@ -1,0 +1,7 @@
+div#captcha, div#captcha-1, div#captcha-2, div#captcha-inscricao {
+    background: #094b6b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px;
+}

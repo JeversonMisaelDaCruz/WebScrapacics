@@ -1,0 +1,95 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+
+.cabecalho .menu, .cabecalho-mobile .menu ul:first-child {
+    display: flex;
+    align-items: center;
+    font-family: 'GalanoClassic';
+}
+
+.cabecalho .menu .white-menu {
+    padding: 0px 25px;
+}
+
+.cabecalho .menu li a, .cabecalho-mobile .menu li a {
+    font-weight: lighter !important;
+    font-size: 0.8125em !important;
+    color: #094b6b !important;
+}
+
+.cabecalho .menu li.active a, .cabecalho-mobile .menu li.active a {
+    font-weight: bold;
+    color: #094b6b !important;
+}
+
+.cabecalho .menu li a:hover {
+    text-decoration: underline;
+    color: #094b6b !important;
+}
+
+.cabecalho .menu .blue-menu {
+    display: flex;
+    align-items: center;
+    background: #094b6b;
+    padding: 25px;
+    position: relative;
+    flex: 1;
+}
+
+.cabecalho .submenu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.cabecalho .submenu li {
+    margin-right: 25px;
+}
+
+.cabecalho .submenu li a {
+    color: #fff !important;
+    font-size: 0.75em !important;
+    font-weight: 500 !important;
+}
+
+.cabecalho .submenu li a:hover {
+    color: #fff !important;
+}
+
+.cabecalho .submenu span {
+    position: absolute;
+    text-transform: uppercase;
+    color: #6af5ff !important;
+    font-weight: bold;
+    top: 15px;
+    left: 24px;
+}
+
+.promocional {
+    display: flex;
+}
+
+@media (max-width: 1680px) {   
+    .cabecalho {
+        display: none!important;
+    }
+
+    .cabecalho-mobile {
+        display: -webkit-box!important;
+        display: -ms-flexbox!important;
+        display: flex!important;
+    }
+}
+
+@media (max-width: 991px) {  
+    .cabecalho-mobile ul.navbar-nav {
+        -webkit-box-align: unset;
+            -ms-flex-align: unset;
+                align-items: unset;
+    }
+}

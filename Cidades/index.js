@@ -1,12 +1,21 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
 
+<<<<<<< Updated upstream
 const runCapitaoScraper = require("./capitao/scraper-acicap");
 const runCascavelScraper = require("./cascavel/script");
 const runCorbeliaScraper = require("./corbelia/script");
 const runMarechalScraper = require("./marechal/scraper-acimacar");
 const SantaHelenaModule = require("./santaHelena/script");
 const ToledoModule = require("./toledo/script");
+=======
+const runCapitaoScraper = require("./Capitao/scraper-acicap");
+const runCorbeliaScraper = require("./Corbelia/script");
+const runMarechalScraper = require("./Marechal/scraper-acimacar");
+const runMedianeiraScraper = require("./Medianeira/scraper");
+const SantaHelenaModule = require("./SantaHelena/script");
+const ToledoModule = require("./Toledo/script");
+>>>>>>> Stashed changes
 
 // Mapeamento das cidades disponíveis
 const AVAILABLE_CITIES = {
@@ -14,6 +23,7 @@ const AVAILABLE_CITIES = {
   cascavel: { name: "ACIC (Cascavel)", scraper: runCascavelScraper },
   corbelia: { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper },
   marechal: { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper },
+  medianeira: { name: "ACIME (Medianeira)", scraper: runMedianeiraScraper },
   santahelena: { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule },
   toledo: { name: "ACIT (Toledo)", scraper: ToledoModule }
 };
