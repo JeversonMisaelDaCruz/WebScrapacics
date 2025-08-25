@@ -1,23 +1,14 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
 
-<<<<<<< Updated upstream
+
 const runCapitaoScraper = require("./capitao/scraper-acicap");
 const runCascavelScraper = require("./cascavel/script");
 const runCorbeliaScraper = require("./corbelia/script");
 const runMarechalScraper = require("./marechal/scraper-acimacar");
 const SantaHelenaModule = require("./santaHelena/script");
 const ToledoModule = require("./toledo/script");
-=======
-const runCapitaoScraper = require("./Capitao/scraper-acicap");
-const runCorbeliaScraper = require("./Corbelia/script");
-const runMarechalScraper = require("./Marechal/scraper-acimacar");
-const runMedianeiraScraper = require("./Medianeira/scraper");
-const SantaHelenaModule = require("./SantaHelena/script");
-const ToledoModule = require("./Toledo/script");
->>>>>>> Stashed changes
 
-// Mapeamento das cidades disponíveis
 const AVAILABLE_CITIES = {
   capitao: { name: "ACICAP (Capitão)", scraper: runCapitaoScraper },
   cascavel: { name: "ACIC (Cascavel)", scraper: runCascavelScraper },
@@ -30,7 +21,7 @@ const AVAILABLE_CITIES = {
 
 async function runScrapers(selectedCities = null) {
   const citiesToRun = selectedCities || Object.keys(AVAILABLE_CITIES);
-  
+
   console.log("==========================================");
   if (selectedCities) {
     console.log(`🚀 INICIANDO WEBSCRAP PARA: ${citiesToRun.map(city => AVAILABLE_CITIES[city]?.name || city).join(", ")}`);
@@ -50,7 +41,7 @@ async function runScrapers(selectedCities = null) {
     }
 
     const { name, scraper } = AVAILABLE_CITIES[cityKey];
-    
+
     const scraperPromise = (async () => {
       try {
         let data;
@@ -60,7 +51,7 @@ async function runScrapers(selectedCities = null) {
         } else {
           data = await scraper();
         }
-        
+
         console.log(`\n🎉 ${name} concluído. Total: ${data.length} empresas.`);
         console.log("------------------------------------------");
         return data;
@@ -76,7 +67,7 @@ async function runScrapers(selectedCities = null) {
 
   // Aguarda todos os scrapers terminarem
   const results = await Promise.all(scraperPromises);
-  
+
   // Consolida todos os resultados
   for (const data of results) {
     allCompanies.push(...data);
@@ -160,13 +151,13 @@ function saveDataToFile(data) {
 
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
+
   // Verifica se é pedido de ajuda
   if (args.includes('--help') || args.includes('-h')) {
     showHelp();
     process.exit(0);
   }
-  
+
   // Se não há argumentos, executa todas as cidades
   if (args.length === 0) {
     runAllScrapers().catch((error) => {
