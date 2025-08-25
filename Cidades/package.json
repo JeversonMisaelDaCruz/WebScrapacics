@@ -4,7 +4,12 @@
   "description": "Web scraper para coletar dados de empresas de associações comerciais em diferentes cidades.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "cascavel":"node /cascavel/script.js",
+    "toledo":"node /toledo/script.js",
+    "santaHelena":"node /santaHelena/script.js",
+    "marechal":"node /marechal/scraper-acimacar.js",
+    "capitao":"node /capitao/scraper-acicap.js"
   },
   "keywords": [
     "webscraping",
