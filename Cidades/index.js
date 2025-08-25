@@ -2,6 +2,7 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 
 const runCapitaoScraper = require("./capitao/scraper-acicap");
+const runCascavelScraper = require("./cascavel/script");
 const runCorbeliaScraper = require("./corbelia/script");
 const runMarechalScraper = require("./marechal/scraper-acimacar");
 const SantaHelenaModule = require("./santaHelena/script");
@@ -10,6 +11,7 @@ const ToledoModule = require("./toledo/script");
 // Mapeamento das cidades disponíveis
 const AVAILABLE_CITIES = {
   capitao: { name: "ACICAP (Capitão)", scraper: runCapitaoScraper },
+  cascavel: { name: "ACIC (Cascavel)", scraper: runCascavelScraper },
   corbelia: { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper },
   marechal: { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper },
   santahelena: { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule },

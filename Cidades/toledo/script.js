@@ -84,6 +84,7 @@ async function getCompanyDetails(company, currentIndex, totalCompanies) {
     });
 
     let endereco = enderecoCompleto.split(' CEP:')[0];
+    let cidade = ((enderecoCompleto.split(' CEP:')[1] || '–').split('–')[1] || '').trim().split('/')[0].trim();
     let cep = null;
 
     if (enderecoCompleto) {
@@ -96,7 +97,7 @@ async function getCompanyDetails(company, currentIndex, totalCompanies) {
     const progress = ((currentIndex / totalCompanies) * 100).toFixed(1);
     console.log(chalk.green(`      ✓ [${progress}%] ${name} - Dados coletados`));
 
-    return { nome: name, endereco, cep, telefone, cidade: "Toledo" };
+    return { nome: name, endereco, cep, telefone, cidade: cidade };
   } catch (err) {
     console.error(chalk.red(`      ❌ Erro ao buscar empresa ${company.name}: ${err.message}`));
     return { nome: company.name, endereco: null, cep: null, telefone: null, cidade: "Toledo" };

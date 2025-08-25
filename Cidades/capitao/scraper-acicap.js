@@ -8,28 +8,6 @@ class AcicapScraper {
     this.baseUrl = BASE_URL + "/associado/";
   }
 
-  // Função para limpar endereço removendo a cidade e o CEP
-  limparEndereco(endereco) {
-    if (!endereco || endereco === "Não informado") return endereco;
-
-    // Remove o CEP do endereço
-    const enderecoSemCep = endereco.replace(/\d{5}-\d{3}/, "").trim();
-
-    // Remove referências a Capitão L. Marques e PR
-    let enderecoLimpo = enderecoSemCep
-      .replace(/Capitão Leônidas Marques/gi, "")
-      .replace(/Capitão L\. Marques/gi, "")
-      .replace(/\s*-\s*PR/gi, "")
-      .replace(/\s*,\s*PR/gi, "")
-      .replace(/\s*PR\s*/gi, "")
-      .replace(/\s{2,}/g, " ")
-      .replace(/^[\s,\-]+|[\s,\-]+$/g, "")
-      .trim();
-
-    // Se o resultado da limpeza for uma string vazia, retorna o original sem CEP
-    return enderecoLimpo || enderecoSemCep;
-  }
-
   async iniciarScraping() {
     console.log("🚀 Iniciando web scraping da ACICAP...");
     const empresas = [];
@@ -105,23 +83,13 @@ class AcicapScraper {
 
               // Extrai o CEP da string de endereço
               const enderecoCompleto = detalhes.endereco || null;
-              let cep = null;
-              if (enderecoCompleto) {
-                const cepMatch = enderecoCompleto.match(/\d{5}-\d{3}/);
-                if (cepMatch) {
-                  cep = cepMatch[0];
-                }
-              }
-
-              // Limpa o endereço para remover CEP e a cidade
-              const enderecoLimpo = this.limparEndereco(enderecoCompleto);
 
               empresasCategoria.push({
                 nome: detalhes.nome || nomeTabela,
                 telefone: detalhes.telefoneCompleto || telefoneTabela || null,
-                endereco: enderecoLimpo,
-                cep: cep,
-                cidade: "Capitão Leônidas Marques",
+                endereco: enderecoCompleto,
+                cep: '',
+                cidade: '',
               });
 
               await new Promise((resolve) => setTimeout(resolve, 300));
