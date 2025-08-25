@@ -1,30 +1,63 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
+const path = require("path");
 
 
-const runCapitaoScraper = require("./capitao/scraper-acicap");
-const runCascavelScraper = require("./cascavel/script");
-const runCorbeliaScraper = require("./corbelia/script");
-const runMarechalScraper = require("./marechal/scraper-acimacar");
-const SantaHelenaModule = require("./santaHelena/script");
-const ToledoModule = require("./toledo/script");
+function safeRequire(modulePath) {
+  try {
+    const fullPath = path.resolve(__dirname, modulePath);
+    if (fs.existsSync(fullPath + ".js") || fs.existsSync(fullPath)) {
+      return require(modulePath);
+    }
+    return null;
+  } catch (error) {
+    console.warn(`⚠️  Não foi possível carregar o módulo: ${modulePath}`);
+    return null;
+  }
+}
 
-const AVAILABLE_CITIES = {
-  capitao: { name: "ACICAP (Capitão)", scraper: runCapitaoScraper },
-  cascavel: { name: "ACIC (Cascavel)", scraper: runCascavelScraper },
-  corbelia: { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper },
-  marechal: { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper },
-  medianeira: { name: "ACIME (Medianeira)", scraper: runMedianeiraScraper },
-  santahelena: { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule },
-  toledo: { name: "ACIT (Toledo)", scraper: ToledoModule }
-};
+const runCapitaoScraper = safeRequire("./capitao/scraper-acicap");
+const runCascavelScraper = safeRequire("./cascavel/script");
+const runMarechalScraper = safeRequire("./marechal/scraper-acimacar");
+const runMedianeiraScraper = safeRequire("./Medianeira/scraper");
+const SantaHelenaModule = safeRequire("./santaHelena/script");
+const ToledoModule = safeRequire("./toledo/script");
+
+
+const AVAILABLE_CITIES = {};
+
+
+if (runCapitaoScraper) {
+  AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
+}
+if (runCascavelScraper) {
+  AVAILABLE_CITIES.cascavel = { name: "ACIC (Cascavel)", scraper: runCascavelScraper };
+}
+if (runMarechalScraper) {
+  AVAILABLE_CITIES.marechal = { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper };
+}
+if (runMedianeiraScraper) {
+  AVAILABLE_CITIES.medianeira = { name: "ACIME (Medianeira)", scraper: runMedianeiraScraper };
+}
+if (SantaHelenaModule) {
+  AVAILABLE_CITIES.santahelena = { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule };
+}
+if (ToledoModule) {
+  AVAILABLE_CITIES.toledo = { name: "ACIT (Toledo)", scraper: ToledoModule };
+}
+
+console.log(`🔍 Cidades carregadas: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
 
 async function runScrapers(selectedCities = null) {
   const citiesToRun = selectedCities || Object.keys(AVAILABLE_CITIES);
 
   console.log("==========================================");
   if (selectedCities) {
-    console.log(`🚀 INICIANDO WEBSCRAP PARA: ${citiesToRun.map(city => AVAILABLE_CITIES[city]?.name || city).join(", ")}`);
+    console.log(
+      `🚀 INICIANDO WEBSCRAP PARA: ${citiesToRun
+        .map((city) => AVAILABLE_CITIES[city]?.name || city)
+        .join(", ")}`
+    );
   } else {
     console.log("🚀 INICIANDO O PROCESSO DE WEBSCRAP COMPLETO");
   }
@@ -36,7 +69,11 @@ async function runScrapers(selectedCities = null) {
   // Executa todos os scrapers selecionados em paralelo
   for (const cityKey of citiesToRun) {
     if (!AVAILABLE_CITIES[cityKey]) {
-      console.error(`\n❌ Cidade '${cityKey}' não encontrada. Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
+      console.error(
+        `\n❌ Cidade '${cityKey}' não encontrada. Cidades disponíveis: ${Object.keys(
+          AVAILABLE_CITIES
+        ).join(", ")}`
+      );
       continue;
     }
 
@@ -45,7 +82,7 @@ async function runScrapers(selectedCities = null) {
     const scraperPromise = (async () => {
       try {
         let data;
-        if (cityKey === 'santahelena') {
+        if (cityKey === "santahelena") {
           const scraperInstance = new scraper();
           data = await scraperInstance.run();
         } else {
@@ -79,7 +116,7 @@ async function runScrapers(selectedCities = null) {
     telefone: empresa.telefone || null,
     endereco: empresa.endereco || null,
     cep: empresa.cep || null,
-    cidade: empresa.cidade || null, // ✅ CAMPO CIDADE ADICIONADO
+    cidade: empresa.cidade || null,
   }));
 
   console.log(`\n✅ PROCESSO FINALIZADO! Total de empresas coletadas: ${filteredCompanies.length}`);
@@ -91,17 +128,17 @@ async function runScrapers(selectedCities = null) {
   }
 }
 
-// Função para manter compatibilidade
+
 async function runAllScrapers() {
   return await runScrapers();
 }
 
-// Função para mostrar ajuda
+
 function showHelp() {
   console.log("\n📋 USO DO SCRIPT:");
   console.log("node index.js [cidades...]");
   console.log("\n🏙️ CIDADES DISPONÍVEIS:");
-  Object.keys(AVAILABLE_CITIES).forEach(key => {
+  Object.keys(AVAILABLE_CITIES).forEach((key) => {
     console.log(`  - ${key}: ${AVAILABLE_CITIES[key].name}`);
   });
   console.log("\n📝 EXEMPLOS:");
@@ -128,7 +165,7 @@ function saveDataToFile(data) {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // ✅ AJUSTADO: Largura para 5 colunas (incluindo cidade)
+
     const columnWidths = [
       { wch: 30 }, // Nome
       { wch: 20 }, // Telefone
@@ -152,21 +189,21 @@ function saveDataToFile(data) {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-  // Verifica se é pedido de ajuda
-  if (args.includes('--help') || args.includes('-h')) {
+
+  if (args.includes("--help") || args.includes("-h")) {
     showHelp();
     process.exit(0);
   }
 
-  // Se não há argumentos, executa todas as cidades
+
   if (args.length === 0) {
     runAllScrapers().catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);
       process.exit(1);
     });
   } else {
-    // Executa apenas as cidades especificadas
-    const selectedCities = args.map(city => city.toLowerCase());
+
+    const selectedCities = args.map((city) => city.toLowerCase());
     runScrapers(selectedCities).catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);
       process.exit(1);
