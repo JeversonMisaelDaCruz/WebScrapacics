@@ -3,7 +3,6 @@ const cheerio = require("cheerio");
 const XLSX = require("xlsx");
 const fs = require("fs");
 
-// ===== Config =====
 const BASE_URL = "https://www.acime.com.br";
 const DEFAULT_HEADERS = {
   "User-Agent":
@@ -13,9 +12,8 @@ const DEFAULT_HEADERS = {
 };
 const REQUEST_TIMEOUT_MS = 20000;
 const DETAIL_TIMEOUT_MS = 15000;
-const MAX_CONCURRENCY = 8; // limite de requisições simultâneas para páginas de detalhe
+const MAX_CONCURRENCY = 8;
 
-// ===== Util =====
 function log(msg, type = "info") {
   const ts = new Date().toLocaleTimeString();
   const icon =
@@ -34,7 +32,7 @@ async function fetchHtml(url, { timeout = REQUEST_TIMEOUT_MS, retries = 2, heade
         headers: { ...DEFAULT_HEADERS, ...headers },
         timeout,
         responseType: "text",
-        transformResponse: (x) => x, // evita transformações inesperadas
+        transformResponse: (x) => x,
         decompress: true,
         maxRedirects: 5,
       });
@@ -50,7 +48,6 @@ async function getAssociadosLinks(html) {
   const $ = cheerio.load(html);
   const linksSet = new Set();
 
-  // Links “Ver Detalhes” para /associado/<slug>
   $("a[href*='/associado/']").each((_, a) => {
     let href = $(a).attr("href");
     if (!href) return;
@@ -65,7 +62,7 @@ async function getAssociadosLinks(html) {
 
 function extractPhonesFromText(text) {
   const phones = new Set();
-  const phoneRegex = /(?:\(?\d{2}\)?\s*)?(?:9?\d{4})-?\d{4}/g; // (45) 99999-9999 / 9999-9999
+  const phoneRegex = /(?:\(?\d{2}\)?\s*)?(?:9?\d{4})-?\d{4}/g;
   let m;
   while ((m = phoneRegex.exec(text)) !== null) {
     phones.add(m[0].replace(/\s+/g, " ").trim());
@@ -78,6 +75,32 @@ function extractCEPFromText(text) {
   return cepMatch ? cepMatch[0] : null;
 }
 
+function processarEndereco(addressBlock) {
+  if (addressBlock.length) {
+    const addrHtml = addressBlock.html() || "";
+    const addrText = normalizeText(addrHtml.replace(/<br\s*\/?>(?!,)/gi, " "));
+
+    const cep = extractCEPFromText(addrText) || null;
+
+    let cleaned = addrText
+      .replace(/\b\d{5}-\d{3}\b/, "")
+      .replace(/-\s*Medianeira\s*-\s*PR/i, "")
+      .replace(/,\s*$/, "")
+      .replace(/^\s*,/, "")
+      .replace(/\s*-\s*$/, "")
+      .replace(/^\s*-\s*/, "");
+
+    const endereco = normalizeText(cleaned);
+
+    return {
+      endereco: endereco && endereco.length >= 8 ? endereco : null,
+      cep: cep,
+    };
+  }
+
+  return { endereco: null, cep: null };
+}
+
 async function getAssociadoData(empresa, index, total) {
   try {
     log(`(${index}/${total}) Buscando: ${empresa.url}`, "progress");
@@ -86,12 +109,10 @@ async function getAssociadoData(empresa, index, total) {
       headers: { Referer: BASE_URL + "/associados" },
     });
 
-    // Debug: salvar HTML bruto para comparação quando necessário
     if (process.env.ACIME_DEBUG_HTML === "1") {
       const debugDir = __dirname + "/debug/html";
       try {
         if (!fs.existsSync(debugDir)) fs.mkdirSync(debugDir, { recursive: true });
-        // limita a 3 dumps por execução
         const counterFile = debugDir + "/.count";
         let count = 0;
         if (fs.existsSync(counterFile))
@@ -109,7 +130,6 @@ async function getAssociadoData(empresa, index, total) {
     }
     const $ = cheerio.load(html, { decodeEntities: true, xmlMode: false });
 
-    // Nome preferencial no ACIME
     let nome =
       normalizeText($(".box-titulo p").first().text()) ||
       normalizeText($("h1").first().text()) ||
@@ -118,7 +138,6 @@ async function getAssociadoData(empresa, index, total) {
 
     const bodyText = normalizeText($("body").text());
 
-    // Endereço e CEP: primeiro bloco de .media.dados-associado SEM ícones (sem .fa-*)
     let endereco = null;
     let cep = null;
     const addressBlock = $(".media.dados-associado")
@@ -128,18 +147,11 @@ async function getAssociadoData(empresa, index, total) {
       })
       .first()
       .find(".media-body");
-    if (addressBlock.length) {
-      const addrHtml = addressBlock.html() || "";
-      const addrText = normalizeText(addrHtml.replace(/<br\s*\/?>(?!,)/gi, " "));
-      cep = extractCEPFromText(addrText) || null;
-      // remove CEP e sufixos de cidade do endereço
-      let cleaned = addrText.replace(/\b\d{5}-\d{3}\b/, "");
-      cleaned = cleaned.replace(/-\s*Medianeira\s*-\s*PR/i, "");
-      endereco = normalizeText(cleaned);
-      if (endereco && endereco.length < 8) endereco = null;
-    }
 
-    // Telefones: bloco com ícone .fa-phone e também botão WhatsApp
+    const enderecoResult = processarEndereco(addressBlock);
+    endereco = enderecoResult.endereco;
+    cep = enderecoResult.cep;
+
     const phoneSet = new Set();
     $(".media.dados-associado").each((_, el) => {
       if ($(el).find(".fa-phone").length) {
@@ -154,7 +166,6 @@ async function getAssociadoData(empresa, index, total) {
     $("button.ver-mais-sidebar").each((_, btn) => {
       extractPhonesFromText($(btn).text()).forEach((p) => phoneSet.add(p));
     });
-    // Fallback: varre o body inteiro
     if (phoneSet.size === 0) extractPhonesFromText(bodyText).forEach((p) => phoneSet.add(p));
     const telefone = Array.from(phoneSet).join(", ") || null;
 
@@ -186,7 +197,6 @@ function saveToExcel(rows) {
     return null;
   }
   const wb = XLSX.utils.book_new();
-  // Ordena colunas em uma ordem consistente
   const ordered = rows.map((r) => ({
     nome: r.nome || "",
     endereco: r.endereco || "",
@@ -196,14 +206,7 @@ function saveToExcel(rows) {
     url: r.url || "",
   }));
   const ws = XLSX.utils.json_to_sheet(ordered);
-  ws["!cols"] = [
-    { wch: 50 }, // nome
-    { wch: 60 }, // endereco
-    { wch: 10 }, // cep
-    { wch: 25 }, // telefone
-    { wch: 15 }, // cidade
-    { wch: 60 }, // url
-  ];
+  ws["!cols"] = [{ wch: 50 }, { wch: 60 }, { wch: 10 }, { wch: 25 }, { wch: 15 }, { wch: 60 }];
   XLSX.utils.book_append_sheet(wb, ws, "Associados");
   const stamp = new Date().toISOString().split("T")[0];
   const filename = `acime_associados_${stamp}.xlsx`;
@@ -226,7 +229,6 @@ async function runAcimeScraper() {
     const total = associadosLinks.length;
     const results = new Array(total);
 
-    // Simple concurrency limiter
     let idx = 0;
     const workers = new Array(Math.min(MAX_CONCURRENCY, total)).fill(0).map(async () => {
       while (true) {
@@ -238,7 +240,6 @@ async function runAcimeScraper() {
     });
     await Promise.all(workers);
 
-    // Padroniza para o agregador (ordem das chaves não importa para JS, mas mantemos consistência)
     const standardized = results.map((r) => ({
       nome: r.nome || null,
       telefone: r.telefone || null,
@@ -247,7 +248,6 @@ async function runAcimeScraper() {
       cidade: r.cidade || "Medianeira",
     }));
 
-    // Quando executado diretamente, salva Excel local desta cidade
     if (require.main === module) {
       saveToExcel(standardized);
       log(`✅ Scraping ACIME concluído! ${standardized.length} empresas processadas.`, "success");
