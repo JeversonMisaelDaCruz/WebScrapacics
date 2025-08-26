@@ -9,7 +9,8 @@
     "toledo": "node /toledo/script.js",
     "santaHelena": "node /santaHelena/script.js",
     "marechal": "node /marechal/scraper-acimacar.js",
-    "capitao": "node /capitao/scraper-acicap.js"
+    "capitao": "node /capitao/scraper-acicap.js",
+    "medianeira": "node /medianeira/scraper.js"
   },
   "keywords": [
     "webscraping",

@@ -2,7 +2,6 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 
-
 function safeRequire(modulePath) {
   try {
     const fullPath = path.resolve(__dirname, modulePath);
@@ -19,13 +18,11 @@ function safeRequire(modulePath) {
 const runCapitaoScraper = safeRequire("./capitao/scraper-acicap");
 const runCascavelScraper = safeRequire("./cascavel/script");
 const runMarechalScraper = safeRequire("./marechal/scraper-acimacar");
-const runMedianeiraScraper = safeRequire("./Medianeira/scraper");
+const runMedianeiraScraper = safeRequire("./medianeira/scraper");
 const SantaHelenaModule = safeRequire("./santaHelena/script");
 const ToledoModule = safeRequire("./toledo/script");
 
-
 const AVAILABLE_CITIES = {};
-
 
 if (runCapitaoScraper) {
   AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
@@ -65,8 +62,6 @@ async function runScrapers(selectedCities = null) {
 
   let allCompanies = [];
   const scraperPromises = [];
-
-  // Executa todos os scrapers selecionados em paralelo
   for (const cityKey of citiesToRun) {
     if (!AVAILABLE_CITIES[cityKey]) {
       console.error(
@@ -128,11 +123,9 @@ async function runScrapers(selectedCities = null) {
   }
 }
 
-
 async function runAllScrapers() {
   return await runScrapers();
 }
-
 
 function showHelp() {
   console.log("\n📋 USO DO SCRIPT:");
@@ -165,7 +158,6 @@ function saveDataToFile(data) {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data);
 
-
     const columnWidths = [
       { wch: 30 }, // Nome
       { wch: 20 }, // Telefone
@@ -189,12 +181,10 @@ function saveDataToFile(data) {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-
   if (args.includes("--help") || args.includes("-h")) {
     showHelp();
     process.exit(0);
   }
-
 
   if (args.length === 0) {
     runAllScrapers().catch((error) => {
@@ -202,7 +192,6 @@ if (require.main === module) {
       process.exit(1);
     });
   } else {
-
     const selectedCities = args.map((city) => city.toLowerCase());
     runScrapers(selectedCities).catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);
