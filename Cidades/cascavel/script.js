@@ -26,7 +26,7 @@ async function getCompanyData() {
           nome: name,
           endereco: address,
           telefone: rawPhone,
-          cidade: '',
+          cidade: "",
         });
         console.log(chalk.green(`  ✓ ${name} - Dados coletados`));
       }
@@ -43,19 +43,21 @@ async function getCompanyData() {
 async function runCascavelScraper() {
   console.log(chalk.cyan.bold("🚀 Iniciando web scraping da ACIC Cascavel..."));
   console.log(chalk.gray("═".repeat(50)));
-  
+
   const companies = await getCompanyData();
-  
+
   if (companies.length > 0) {
     companies.sort((a, b) => a.nome.localeCompare(b.nome));
     console.log(chalk.green(`📊 ${companies.length} empresas processadas e ordenadas`));
   }
-  
+
   console.log(chalk.gray("═".repeat(50)));
   console.log(chalk.green.bold(`✅ Scraping da ACIC Cascavel concluído!`));
-  console.log(chalk.white(`📊 Total de empresas processadas: ${chalk.bold.green(companies.length)}`));
+  console.log(
+    chalk.white(`📊 Total de empresas processadas: ${chalk.bold.green(companies.length)}`)
+  );
   console.log(chalk.gray("═".repeat(50)));
-  
+
   return companies;
 }
 

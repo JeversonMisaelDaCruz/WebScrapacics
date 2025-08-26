@@ -16,6 +16,7 @@ function safeRequire(modulePath) {
 }
 
 const runCapitaoScraper = safeRequire("./capitao/scraper-acicap");
+const runCorbeliaScraper = safeRequire("./corbelia/script");
 const runCascavelScraper = safeRequire("./cascavel/script");
 const runMarechalScraper = safeRequire("./marechal/scraper-acimacar");
 const runMedianeiraScraper = safeRequire("./medianeira/scraper");
@@ -26,6 +27,9 @@ const AVAILABLE_CITIES = {};
 
 if (runCapitaoScraper) {
   AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
+}
+if (runCorbeliaScraper) {
+  AVAILABLE_CITIES.corbelia = { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper };
 }
 if (runCascavelScraper) {
   AVAILABLE_CITIES.cascavel = { name: "ACIC (Cascavel)", scraper: runCascavelScraper };
