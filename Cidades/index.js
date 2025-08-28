@@ -1,53 +1,22 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
-const path = require("path");
 
-function safeRequire(modulePath) {
-  try {
-    const fullPath = path.resolve(__dirname, modulePath);
-    if (fs.existsSync(fullPath + ".js") || fs.existsSync(fullPath)) {
-      return require(modulePath);
-    }
-    return null;
-  } catch (error) {
-    console.warn(`⚠️  Não foi possível carregar o módulo: ${modulePath}`);
-    return null;
-  }
-}
+const runCapitaoScraper = require("./capitao/scraper-acicap");
+const runCascavelScraper = require("./cascavel/script");
+const runCorbeliaScraper = require("./corbelia/script");
+const runMarechalScraper = require("./marechal/scraper-acimacar");
+const SantaHelenaModule = require("./santaHelena/script");
+const ToledoModule = require("./toledo/script");
 
-const runCapitaoScraper = safeRequire("./capitao/scraper-acicap");
-const runCorbeliaScraper = safeRequire("./corbelia/script");
-const runCascavelScraper = safeRequire("./cascavel/script");
-const runMarechalScraper = safeRequire("./marechal/scraper-acimacar");
-const runMedianeiraScraper = safeRequire("./medianeira/scraper");
-const SantaHelenaModule = safeRequire("./santaHelena/script");
-const ToledoModule = safeRequire("./toledo/script");
-
-const AVAILABLE_CITIES = {};
-
-if (runCapitaoScraper) {
-  AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
-}
-if (runCorbeliaScraper) {
-  AVAILABLE_CITIES.corbelia = { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper };
-}
-if (runCascavelScraper) {
-  AVAILABLE_CITIES.cascavel = { name: "ACIC (Cascavel)", scraper: runCascavelScraper };
-}
-if (runMarechalScraper) {
-  AVAILABLE_CITIES.marechal = { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper };
-}
-if (runMedianeiraScraper) {
-  AVAILABLE_CITIES.medianeira = { name: "ACIME (Medianeira)", scraper: runMedianeiraScraper };
-}
-if (SantaHelenaModule) {
-  AVAILABLE_CITIES.santahelena = { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule };
-}
-if (ToledoModule) {
-  AVAILABLE_CITIES.toledo = { name: "ACIT (Toledo)", scraper: ToledoModule };
-}
-
-console.log(`🔍 Cidades carregadas: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
+// Mapeamento das cidades disponíveis
+const AVAILABLE_CITIES = {
+  capitao: { name: "ACICAP (Capitão)", scraper: runCapitaoScraper },
+  cascavel: { name: "ACIC (Cascavel)", scraper: runCascavelScraper },
+  corbelia: { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper },
+  marechal: { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper },
+  santahelena: { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule },
+  toledo: { name: "ACIT (Toledo)", scraper: ToledoModule },
+};
 
 async function runScrapers(selectedCities = null) {
   const citiesToRun = selectedCities || Object.keys(AVAILABLE_CITIES);
@@ -66,6 +35,8 @@ async function runScrapers(selectedCities = null) {
 
   let allCompanies = [];
   const scraperPromises = [];
+
+  // Executa todos os scrapers selecionados em paralelo
   for (const cityKey of citiesToRun) {
     if (!AVAILABLE_CITIES[cityKey]) {
       console.error(
@@ -115,7 +86,7 @@ async function runScrapers(selectedCities = null) {
     telefone: empresa.telefone || null,
     endereco: empresa.endereco || null,
     cep: empresa.cep || null,
-    cidade: empresa.cidade || null,
+    cidade: empresa.cidade || null, // ✅ CAMPO CIDADE ADICIONADO
   }));
 
   console.log(`\n✅ PROCESSO FINALIZADO! Total de empresas coletadas: ${filteredCompanies.length}`);
@@ -127,10 +98,12 @@ async function runScrapers(selectedCities = null) {
   }
 }
 
+// Função para manter compatibilidade
 async function runAllScrapers() {
   return await runScrapers();
 }
 
+// Função para mostrar ajuda
 function showHelp() {
   console.log("\n📋 USO DO SCRIPT:");
   console.log("node index.js [cidades...]");
@@ -162,6 +135,7 @@ function saveDataToFile(data) {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data);
 
+    // ✅ AJUSTADO: Largura para 5 colunas (incluindo cidade)
     const columnWidths = [
       { wch: 30 }, // Nome
       { wch: 20 }, // Telefone
@@ -185,17 +159,20 @@ function saveDataToFile(data) {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
+  // Verifica se é pedido de ajuda
   if (args.includes("--help") || args.includes("-h")) {
     showHelp();
     process.exit(0);
   }
 
+  // Se não há argumentos, executa todas as cidades
   if (args.length === 0) {
     runAllScrapers().catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);
       process.exit(1);
     });
   } else {
+    // Executa apenas as cidades especificadas
     const selectedCities = args.map((city) => city.toLowerCase());
     runScrapers(selectedCities).catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);

@@ -1,15 +1,15 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const BASE_URL = "https://www.acicaf.com.br/";
+const BASE_URL = "https://www.acicaf.com.br";
 
-class AcicapScraper {
+class AcicafScraper {
   constructor() {
     this.baseUrl = BASE_URL + "/associado/";
   }
 
   async iniciarScraping() {
-    console.log("🚀 Iniciando web scraping da ACICAP...");
+    console.log("🚀 Iniciando web scraping da ACICAF (Cafelândia)...");
     const empresas = [];
 
     try {
@@ -36,26 +36,39 @@ class AcicapScraper {
         }
       }
     } catch (error) {
-      console.error("❌ Erro fatal ACICAP:", error.message);
+      console.error("❌ Erro fatal ACICAF:", error.message);
     }
 
-    console.log(`✅ ACICAP concluído! Total: ${empresas.length}`);
+    console.log(`✅ ACICAF (Cafelândia) concluído! Total: ${empresas.length}`);
     return empresas;
   }
 
   encontrarCategorias($) {
     const categorias = [];
-    $(".single-faq").each((index, acordeao) => {
-      const titulo = $(acordeao).find(".faq-title a");
+
+    // Busca por painéis de categoria (estrutura collapse)
+    $(".panel").each((index, painel) => {
+      const titulo = $(painel).find(".panel-title a");
       if (titulo.length) {
         const nomeCompleto = titulo.text().trim();
-        const nome = nomeCompleto.replace(/\s*\(\d+\)\s*$/, "").replace(/^\s*[\+\-]\s*/, "");
+        // Remove a contagem de empresas e símbolos extras
+        const nome = nomeCompleto
+          .replace(/\s*\(\s*\d+\s*\)\s*$/, "")
+          .replace(/^\s*[\+\-]\s*/, "")
+          .trim();
         const href = titulo.attr("href");
+
         if (href && nome) {
-          categorias.push({ index, nome, href });
+          categorias.push({
+            index,
+            nome,
+            href,
+            painel: $(painel), // Guardamos o painel para processar depois
+          });
         }
       }
     });
+
     return categorias;
   }
 
@@ -63,35 +76,42 @@ class AcicapScraper {
     const empresasCategoria = [];
 
     try {
-      const idDoPainel = categoria.href.substring(1);
-      const painelCategoria = $(`[id="${idDoPainel}"]`);
+      // Obtém o ID do painel collapse
+      const idDoPainel = categoria.href.substring(1); // Remove o #
+      const painelCategoria = $(`#${idDoPainel}`);
 
       if (painelCategoria.length) {
-        const linhas = painelCategoria.find("tbody tr");
+        const linhas = painelCategoria.find("table.table tbody tr");
 
         for (let j = 0; j < linhas.length; j++) {
           const linha = linhas.eq(j);
           const colunas = linha.find("td");
 
           if (colunas.length >= 3) {
+            // Primeira coluna: nome da empresa
             const nomeTabela = colunas.eq(0).text().trim() || "";
+
+            // Segunda coluna: telefone (se houver)
             const telefoneTabela = colunas.eq(1).text().trim() || "";
+
+            // Terceira coluna: link para detalhes
             const linkDetalhes = colunas.eq(2).find("a").attr("href") || "";
 
             if (nomeTabela && linkDetalhes) {
-              const detalhes = await this.coletarDetalhesEmpresa(linkDetalhes);
+              console.log(`   📋 Processando: ${nomeTabela}`);
 
-              // Extrai o CEP da string de endereço
-              const enderecoCompleto = detalhes.endereco || null;
+              const detalhes = await this.coletarDetalhesEmpresa(linkDetalhes);
 
               empresasCategoria.push({
                 nome: detalhes.nome || nomeTabela,
                 telefone: detalhes.telefoneCompleto || telefoneTabela || null,
-                endereco: enderecoCompleto,
-                cep: "",
-                cidade: "",
+                endereco: detalhes.endereco || null,
+                cep: detalhes.cep || null,
+                cidade: "Cafelândia - PR",
+                email: detalhes.email || null,
               });
 
+              // Pausa entre requisições
               await new Promise((resolve) => setTimeout(resolve, 300));
             }
           }
@@ -120,50 +140,83 @@ class AcicapScraper {
       const dados = {
         nome: null,
         endereco: null,
+        cep: null,
         telefoneCompleto: null,
+        email: null,
       };
 
-      // --- INÍCIO DA CORREÇÃO ---
-      // Pega o nome da empresa, que geralmente está em um H2
-      dados.nome = $("h2.mb-3").first().text().trim() || null;
+      // Nome da empresa (geralmente no título da caixa)
+      dados.nome =
+        $(".box-titulo p").first().text().trim() ||
+        $("h1").first().text().trim() ||
+        $("h2").first().text().trim() ||
+        null;
 
-      // Busca os dados no container correto (div.small-list-feature) e nos elementos <li>
-      const infoContainer = $(".small-list-feature");
-      if (infoContainer.length) {
-        infoContainer.find("li").each((_, li) => {
-          // Itera sobre cada item da lista (<li>)
-          const elemento = $(li);
-          const texto = elemento.text().trim();
-          const html = elemento.html();
+      // Busca endereço e CEP na div.media-body que contém dados do endereço
+      $(".dados-associado .media-body").each((_, elemento) => {
+        const texto = $(elemento).text().trim();
 
-          // Verifica se o item da lista contém o ícone de mapa
-          if (html && html.includes("fa-map-marker")) {
-            dados.endereco = texto;
+        // Se contém CEP (formato XXXXX-XXX)
+        if (texto.match(/\d{5}-\d{3}/)) {
+          dados.endereco = texto.replace(/\s+/g, " ").trim();
+
+          // Extrai CEP
+          const cepMatch = texto.match(/(\d{5}-\d{3})/);
+          if (cepMatch) {
+            dados.cep = cepMatch[1];
           }
-          // Verifica se o item da lista contém o ícone de telefone
-          if (html && html.includes("fa-phone")) {
-            dados.telefoneCompleto = texto;
+        }
+      });
+
+      // Busca telefone - procura por ícone de telefone
+      $(".dados-associado").each((_, elemento) => {
+        const $elemento = $(elemento);
+        const html = $elemento.html();
+
+        if (html && html.includes("fa-phone")) {
+          const telefoneText = $elemento.find(".media-body").text().trim();
+          if (telefoneText) {
+            dados.telefoneCompleto = telefoneText;
           }
-        });
+        }
+      });
+
+      // Busca email - procura por ícone de envelope ou link mailto
+      $(".dados-associado").each((_, elemento) => {
+        const $elemento = $(elemento);
+        const html = $elemento.html();
+
+        if (html && html.includes("fa-envelope")) {
+          const emailText = $elemento.find(".media-body").text().trim();
+          if (emailText && emailText.includes("@")) {
+            dados.email = emailText;
+          }
+        }
+      });
+
+      // Busca email por link mailto também
+      const mailtoLink = $("a[href^='mailto:']").attr("href");
+      if (mailtoLink && !dados.email) {
+        dados.email = mailtoLink.replace("mailto:", "");
       }
-      // --- FIM DA CORREÇÃO ---
 
       return dados;
     } catch (error) {
-      // Em caso de erro na requisição, retorna objeto vazio para não quebrar o processo
       console.error(`   - Erro ao coletar detalhes de ${linkDetalhes}: ${error.message}`);
       return {
         nome: null,
         endereco: null,
+        cep: null,
         telefoneCompleto: null,
+        email: null,
       };
     }
   }
 }
 
-async function runAcicapScraper() {
-  const scraper = new AcicapScraper();
+async function runAcicafCafelandia() {
+  const scraper = new AcicafScraper();
   return await scraper.iniciarScraping();
 }
 
-module.exports = runAcicapScraper;
+module.exports = runAcicafCafelandia;

@@ -146,19 +146,14 @@ class CorbeliaScraper {
         },
       });
 
-      // Extrair links dos associados
       const associadosLinks = await this.getAssociadosLinks(response.data);
       console.log(`📋 Encontrados ${associadosLinks.length} associados para processar`);
 
-      // Processar cada associado
       for (let i = 0; i < associadosLinks.length; i++) {
         const empresa = associadosLinks[i];
         console.log(`📍 [${i + 1}/${associadosLinks.length}] Processando...`);
-
         const dadosEmpresa = await this.getAssociadoData(empresa);
         empresas.push(dadosEmpresa);
-
-        // Delay entre requisições para não sobrecarregar o servidor
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
