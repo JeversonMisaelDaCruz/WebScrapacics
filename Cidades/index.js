@@ -1,27 +1,133 @@
+// Polyfill para ReadableStream (necessário para alguns scrapers)
+if (!global.ReadableStream) {
+  const {
+    ReadableStream,
+    WritableStream,
+    TransformStream,
+  } = require("web-streams-polyfill/ponyfill");
+  global.ReadableStream = ReadableStream;
+  global.WritableStream = WritableStream;
+  global.TransformStream = TransformStream;
+}
+
 const XLSX = require("xlsx");
 const fs = require("fs");
+const path = require("path");
 
-const runCapitaoScraper = require("./capitao/scraper-acicap");
-const runCascavelScraper = require("./cascavel/script");
-const runCorbeliaScraper = require("./corbelia/script");
-const runMarechalScraper = require("./marechal/scraper-acimacar");
-const SantaHelenaModule = require("./santaHelena/script");
-const ToledoModule = require("./toledo/script");
+function safeRequire(modulePath) {
+  try {
+    const possiblePaths = [
+      path.resolve(__dirname, modulePath + ".js"),
+      path.resolve(__dirname, modulePath + "/index.js"),
+      path.resolve(__dirname, modulePath),
+    ];
 
-// Mapeamento das cidades disponíveis
-const AVAILABLE_CITIES = {
-  capitao: { name: "ACICAP (Capitão)", scraper: runCapitaoScraper },
-  cascavel: { name: "ACIC (Cascavel)", scraper: runCascavelScraper },
-  corbelia: { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper },
-  marechal: { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper },
-  santahelena: { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule },
-  toledo: { name: "ACIT (Toledo)", scraper: ToledoModule },
-};
+    for (const fullPath of possiblePaths) {
+      if (fs.existsSync(fullPath)) {
+        console.log(`✅ Carregando módulo: ${modulePath} de ${fullPath}`);
+        return require(modulePath);
+      }
+    }
+    console.warn(`⚠️  Módulo não encontrado: ${modulePath}`);
+    console.warn(`   Caminhos verificados:`);
+    possiblePaths.forEach((p) => console.warn(`   - ${p}`));
+    return null;
+  } catch (error) {
+    console.warn(`⚠️  Erro ao carregar módulo ${modulePath}: ${error.message}`);
+    return null;
+  }
+}
+
+console.log("Verificando scrapers disponíveis...\n");
+const runCapitaoScraper = safeRequire("./capitao/scraper-acicap");
+const runCorbeliaScraper = safeRequire("./corbelia/script");
+const runCascavelScraper = safeRequire("./cascavel/script");
+const runMarechalScraper = safeRequire("./marechal/scraper-acimacar");
+const runMedianeiraScraper = safeRequire("./medianeira/scraper");
+const SantaHelenaModule = safeRequire("./santaHelena/script");
+const ToledoModule = safeRequire("./toledo/script");
+const runCafelandiaScraper = safeRequire("./cafelandia/script");
+const runNovaAuroraScraper = safeRequire("./novaaurora/script");
+
+const AVAILABLE_CITIES = {};
+
+if (runCapitaoScraper) {
+  AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
+  console.log(" Capitão carregado");
+}
+if (runCorbeliaScraper) {
+  AVAILABLE_CITIES.corbelia = { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper };
+  console.log(" Corbélia carregado");
+}
+if (runCascavelScraper) {
+  AVAILABLE_CITIES.cascavel = { name: "ACIC (Cascavel)", scraper: runCascavelScraper };
+  console.log(" Cascavel carregado");
+}
+if (runMarechalScraper) {
+  AVAILABLE_CITIES.marechal = { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper };
+  console.log(" Marechal carregado");
+}
+if (runMedianeiraScraper) {
+  AVAILABLE_CITIES.medianeira = { name: "ACIME (Medianeira)", scraper: runMedianeiraScraper };
+  console.log(" Medianeira carregado");
+}
+if (SantaHelenaModule) {
+  AVAILABLE_CITIES.santahelena = { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule };
+  console.log(" Santa Helena carregado");
+}
+if (ToledoModule) {
+  AVAILABLE_CITIES.toledo = { name: "ACIT (Toledo)", scraper: ToledoModule };
+  console.log(" Toledo carregado");
+}
+if (runCafelandiaScraper) {
+  AVAILABLE_CITIES.cafelandia = { name: "ACICAF (Cafelândia)", scraper: runCafelandiaScraper };
+  console.log(" Cafelândia carregado");
+}
+if (runNovaAuroraScraper) {
+  AVAILABLE_CITIES.novaaurora = { name: "ACINA (Nova Aurora)", scraper: runNovaAuroraScraper };
+  console.log(" Nova Aurora carregado");
+}
+
+console.log(`\n🔍 Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
+
+// Função para verificar estrutura de diretórios
+function checkDirectoryStructure() {
+  console.log("\n📁 Verificando estrutura de diretórios:");
+
+  const expectedDirs = [
+    "./capitao",
+    "./corbelia",
+    "./cascavel",
+    "./marechal",
+    "./medianeira",
+    "./santaHelena",
+    "./toledo",
+    "./cafelandia",
+    "./novaaurora",
+  ];
+
+  expectedDirs.forEach((dir) => {
+    const fullPath = path.resolve(__dirname, dir);
+    if (fs.existsSync(fullPath)) {
+      console.log(`✅ ${dir} existe`);
+
+      // Lista arquivos no diretório
+      try {
+        const files = fs.readdirSync(fullPath);
+        console.log(`   Arquivos: ${files.join(", ")}`);
+      } catch (error) {
+        console.log(`   ❌ Erro ao ler diretório: ${error.message}`);
+      }
+    } else {
+      console.log(`❌ ${dir} não existe`);
+    }
+  });
+}
 
 async function runScrapers(selectedCities = null) {
   const citiesToRun = selectedCities || Object.keys(AVAILABLE_CITIES);
 
-  console.log("==========================================");
+  console.log("\n==========================================");
   if (selectedCities) {
     console.log(
       `🚀 INICIANDO WEBSCRAP PARA: ${citiesToRun
@@ -36,7 +142,6 @@ async function runScrapers(selectedCities = null) {
   let allCompanies = [];
   const scraperPromises = [];
 
-  // Executa todos os scrapers selecionados em paralelo
   for (const cityKey of citiesToRun) {
     if (!AVAILABLE_CITIES[cityKey]) {
       console.error(
@@ -51,6 +156,8 @@ async function runScrapers(selectedCities = null) {
 
     const scraperPromise = (async () => {
       try {
+        console.log(`\n🔄 Executando scraper para ${name}...`);
+
         let data;
         if (cityKey === "santahelena") {
           const scraperInstance = new scraper();
@@ -64,6 +171,7 @@ async function runScrapers(selectedCities = null) {
         return data;
       } catch (error) {
         console.error(`\n❌ Erro ao executar o scraper de ${name}:`, error.message);
+        console.error(`   Stack: ${error.stack}`);
         console.log("------------------------------------------");
         return [];
       }
@@ -86,7 +194,7 @@ async function runScrapers(selectedCities = null) {
     telefone: empresa.telefone || null,
     endereco: empresa.endereco || null,
     cep: empresa.cep || null,
-    cidade: empresa.cidade || null, // ✅ CAMPO CIDADE ADICIONADO
+    cidade: empresa.cidade || null,
   }));
 
   console.log(`\n✅ PROCESSO FINALIZADO! Total de empresas coletadas: ${filteredCompanies.length}`);
@@ -98,12 +206,10 @@ async function runScrapers(selectedCities = null) {
   }
 }
 
-// Função para manter compatibilidade
 async function runAllScrapers() {
   return await runScrapers();
 }
 
-// Função para mostrar ajuda
 function showHelp() {
   console.log("\n📋 USO DO SCRIPT:");
   console.log("node index.js [cidades...]");
@@ -116,6 +222,7 @@ function showHelp() {
   console.log("  node index.js toledo             # Executa apenas Toledo");
   console.log("  node index.js toledo capitao     # Executa Toledo e Capitão");
   console.log("  node index.js --help             # Mostra esta ajuda");
+  console.log("  node index.js --check            # Verifica estrutura de diretórios");
 }
 
 function saveDataToFile(data) {
@@ -135,13 +242,12 @@ function saveDataToFile(data) {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // ✅ AJUSTADO: Largura para 5 colunas (incluindo cidade)
     const columnWidths = [
       { wch: 30 }, // Nome
       { wch: 20 }, // Telefone
       { wch: 50 }, // Endereço
       { wch: 15 }, // CEP
-      { wch: 20 }, // Cidade ✅ NOVA COLUNA
+      { wch: 20 }, // Cidade
     ];
 
     worksheet["!cols"] = columnWidths;
@@ -159,20 +265,22 @@ function saveDataToFile(data) {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-  // Verifica se é pedido de ajuda
   if (args.includes("--help") || args.includes("-h")) {
     showHelp();
     process.exit(0);
   }
 
-  // Se não há argumentos, executa todas as cidades
+  if (args.includes("--check")) {
+    checkDirectoryStructure();
+    process.exit(0);
+  }
+
   if (args.length === 0) {
     runAllScrapers().catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);
       process.exit(1);
     });
   } else {
-    // Executa apenas as cidades especificadas
     const selectedCities = args.map((city) => city.toLowerCase());
     runScrapers(selectedCities).catch((error) => {
       console.error("❌ Erro fatal no processo principal:", error.message);
