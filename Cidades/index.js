@@ -49,6 +49,7 @@ const ToledoModule = safeRequire("./toledo/script");
 const runCafelandiaScraper = safeRequire("./cafelandia/script");
 const runNovaAuroraScraper = safeRequire("./novaaurora/script");
 const runCeuAzulScraper = safeRequire("./ceuAzul/script");
+const runAcicLindoOesteScraper = safeRequire("./lindoOeste/script");
 
 const AVAILABLE_CITIES = {};
 
@@ -92,11 +93,17 @@ if (runCeuAzulScraper) {
   AVAILABLE_CITIES.ceuazul = { name: "ACINA (Ceu Azul)", scraper: runCeuAzulScraper };
   console.log(" Ceu Azul carregado");
 }
+if (runAcicLindoOesteScraper) {
+  AVAILABLE_CITIES.lindooeste = { name: "ACICLO (Lindo Oeste)", scraper: runAcicLindoOesteScraper };
+  console.log("✅ Lindo Oeste carregado");
+}
 
 console.log(`\n🔍 Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
 function checkDirectoryStructure() {
   console.log("\n📁 Verificando estrutura de diretórios:");
   const expectedDirs = [
+    "./santaHelena",
+    "./lindoOeste",
     "./capitao",
     "./corbelia",
     "./cascavel",
@@ -117,7 +124,7 @@ function checkDirectoryStructure() {
         const files = fs.readdirSync(fullPath);
         console.log(`   Arquivos: ${files.join(", ")}`);
       } catch (error) {
-        console.log(`   ❌ Erro ao ler diretório: ${error.message}`);
+        console.log(` Erro ao ler diretório: ${error.message}`);
       }
     } else {
       console.log(`❌ ${dir} não existe`);
@@ -136,7 +143,7 @@ async function runScrapers(selectedCities = null) {
         .join(", ")}`
     );
   } else {
-    console.log("🚀 INICIANDO O PROCESSO DE WEBSCRAP COMPLETO");
+    console.log(" INICIANDO O PROCESSO DE WEBSCRAP COMPLETO");
   }
   console.log("==========================================");
 
@@ -218,12 +225,6 @@ function showHelp() {
   Object.keys(AVAILABLE_CITIES).forEach((key) => {
     console.log(`  - ${key}: ${AVAILABLE_CITIES[key].name}`);
   });
-  console.log("\n📝 EXEMPLOS:");
-  console.log("  node index.js                    # Executa todas as cidades");
-  console.log("  node index.js toledo             # Executa apenas Toledo");
-  console.log("  node index.js toledo capitao     # Executa Toledo e Capitão");
-  console.log("  node index.js --help             # Mostra esta ajuda");
-  console.log("  node index.js --check            # Verifica estrutura de diretórios");
 }
 
 function saveDataToFile(data) {
