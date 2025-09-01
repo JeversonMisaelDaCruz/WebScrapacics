@@ -48,6 +48,7 @@ const SantaHelenaModule = safeRequire("./santaHelena/script");
 const ToledoModule = safeRequire("./toledo/script");
 const runCafelandiaScraper = safeRequire("./cafelandia/script");
 const runNovaAuroraScraper = safeRequire("./novaaurora/script");
+const runCeuAzulScraper = safeRequire("./ceuAzul/script");
 
 const AVAILABLE_CITIES = {};
 
@@ -87,13 +88,14 @@ if (runNovaAuroraScraper) {
   AVAILABLE_CITIES.novaaurora = { name: "ACINA (Nova Aurora)", scraper: runNovaAuroraScraper };
   console.log(" Nova Aurora carregado");
 }
+if (runCeuAzulScraper) {
+  AVAILABLE_CITIES.ceuazul = { name: "ACINA (Ceu Azul)", scraper: runCeuAzulScraper };
+  console.log(" Ceu Azul carregado");
+}
 
 console.log(`\n🔍 Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
-
-// Função para verificar estrutura de diretórios
 function checkDirectoryStructure() {
   console.log("\n📁 Verificando estrutura de diretórios:");
-
   const expectedDirs = [
     "./capitao",
     "./corbelia",
@@ -104,14 +106,13 @@ function checkDirectoryStructure() {
     "./toledo",
     "./cafelandia",
     "./novaaurora",
+    "./ceuAzul",
   ];
 
   expectedDirs.forEach((dir) => {
     const fullPath = path.resolve(__dirname, dir);
     if (fs.existsSync(fullPath)) {
       console.log(`✅ ${dir} existe`);
-
-      // Lista arquivos no diretório
       try {
         const files = fs.readdirSync(fullPath);
         console.log(`   Arquivos: ${files.join(", ")}`);

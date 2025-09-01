@@ -11,7 +11,8 @@
     "marechal": "node /marechal/scraper-acimacar.js",
     "capitao": "node /capitao/scraper-acicap.js",
     "medianeira": "node /medianeira/scraper.js",
-    "corbelia": "node /corbelia/script.js"
+    "corbelia": "node /corbelia/script.js",
+    "ceuAzul": "node /ceuAzul/script.js"
   },
   "keywords": [
     "webscraping",
