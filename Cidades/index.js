@@ -231,7 +231,7 @@ function saveDataToFile(data) {
     const now = new Date();
     const timestamp = now.toISOString().split("T")[0];
 
-    const resultsDir = "./resultados";
+    const resultsDir = "../results";
     if (!fs.existsSync(resultsDir)) {
       fs.mkdirSync(resultsDir);
     }
