@@ -56,51 +56,51 @@ const AVAILABLE_CITIES = {};
 
 if (runCapitaoScraper) {
   AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
-  console.log(" Capitão carregado");
+  console.log("✅ Capitão carregado");
 }
 if (runCorbeliaScraper) {
   AVAILABLE_CITIES.corbelia = { name: "ACICORB (Corbélia)", scraper: runCorbeliaScraper };
-  console.log(" Corbélia carregado");
+  console.log("✅ Corbélia carregado");
 }
 if (runCascavelScraper) {
   AVAILABLE_CITIES.cascavel = { name: "ACIC (Cascavel)", scraper: runCascavelScraper };
-  console.log(" Cascavel carregado");
+  console.log("✅ Cascavel carregado");
 }
 if (runMarechalScraper) {
   AVAILABLE_CITIES.marechal = { name: "ACIMACAR (Marechal)", scraper: runMarechalScraper };
-  console.log(" Marechal carregado");
+  console.log("✅ Marechal carregado");
 }
 if (runMedianeiraScraper) {
   AVAILABLE_CITIES.medianeira = { name: "ACIME (Medianeira)", scraper: runMedianeiraScraper };
-  console.log(" Medianeira carregado");
+  console.log("✅ Medianeira carregado");
 }
 if (SantaHelenaModule) {
   AVAILABLE_CITIES.santahelena = { name: "ACISASH (Santa Helena)", scraper: SantaHelenaModule };
-  console.log(" Santa Helena carregado");
+  console.log("✅ Santa Helena carregado");
 }
 if (ToledoModule) {
   AVAILABLE_CITIES.toledo = { name: "ACIT (Toledo)", scraper: ToledoModule };
-  console.log(" Toledo carregado");
+  console.log("✅ Toledo carregado");
 }
 if (runCafelandiaScraper) {
   AVAILABLE_CITIES.cafelandia = { name: "ACICAF (Cafelândia)", scraper: runCafelandiaScraper };
-  console.log(" Cafelândia carregado");
+  console.log("✅ Cafelândia carregado");
 }
 if (runNovaAuroraScraper) {
   AVAILABLE_CITIES.novaaurora = { name: "ACINA (Nova Aurora)", scraper: runNovaAuroraScraper };
-  console.log(" Nova Aurora carregado");
+  console.log("✅ Nova Aurora carregado");
 }
 if (runCeuAzulScraper) {
   AVAILABLE_CITIES.ceuazul = { name: "ACINA (Ceu Azul)", scraper: runCeuAzulScraper };
-  console.log(" Ceu Azul carregado");
+  console.log("✅ Ceu Azul carregado");
+}
+if (runMatelandiascraper) {
+  AVAILABLE_CITIES.matelandia = { name: "ACIMAT (Matelândia)", scraper: runMatelandiascraper };
+  console.log("✅ Matelândia carregado");
 }
 if (runAcicLindoOesteScraper) {
   AVAILABLE_CITIES.lindooeste = { name: "ACICLO (Lindo Oeste)", scraper: runAcicLindoOesteScraper };
   console.log("✅ Lindo Oeste carregado");
-}
-if (runMatelandiascraper) {
-  AVAILABLE_CITIES.cafelandia = { name: "ACIMAT (Matelândia)", scraper: runMatelandiascraper };
-  console.log("✅ Matelândia carregado");
 }
 
 console.log(`\n🔍 Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);

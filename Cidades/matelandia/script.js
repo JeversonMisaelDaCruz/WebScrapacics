@@ -9,7 +9,7 @@ class AcicMatelandiaScraper {
   }
 
   async iniciarScraping() {
-    console.log("🚀 Iniciando web scraping de Lindo Oeste");
+    console.log("🚀 Iniciando web scraping de Matelandia");
     const empresas = [];
 
     try {
@@ -101,7 +101,7 @@ class AcicMatelandiaScraper {
               const phoneMatch = href.match(/phone=(\d+)/);
               if (phoneMatch) {
                 const numeroCompleto = phoneMatch[1];
-                // Remove código do país e formata: 554584098360 -> (45) 8409-8360
+
                 if (numeroCompleto.length >= 11) {
                   const ddd = numeroCompleto.substr(-11, 2);
                   const numero = numeroCompleto.substr(-9);
@@ -125,7 +125,7 @@ class AcicMatelandiaScraper {
                 telefone: detalhes.telefoneCompleto || telefoneTabela || null,
                 endereco: detalhes.endereco || null,
                 cep: detalhes.cep || null,
-                cidade: "Lindo Oeste - PR",
+                cidade: "Matelandia - PR",
                 email: detalhes.email || null,
               };
 
@@ -188,8 +188,8 @@ class AcicMatelandiaScraper {
         const temIcone =
           $elemento.siblings(".media-left").find("i.fa-phone, i.fa-envelope").length > 0;
 
-        if (!temIcone && texto.includes("85826-000")) {
-          // CEP específico de Lindo Oeste
+        if (!temIcone && texto.match(/\d{5}-\d{3}/)) {
+          
           dados.endereco = texto.replace(/\s+/g, " ").trim();
 
           // Extrai CEP
