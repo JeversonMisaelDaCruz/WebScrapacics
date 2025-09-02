@@ -49,6 +49,7 @@ const ToledoModule = safeRequire("./toledo/script");
 const runCafelandiaScraper = safeRequire("./cafelandia/script");
 const runNovaAuroraScraper = safeRequire("./novaaurora/script");
 const runCeuAzulScraper = safeRequire("./ceuAzul/script");
+const runMatelandiascraper = safeRequire("./matelandia/script");
 const runAcicLindoOesteScraper = safeRequire("./lindoOeste/script");
 
 const AVAILABLE_CITIES = {};
@@ -97,6 +98,10 @@ if (runAcicLindoOesteScraper) {
   AVAILABLE_CITIES.lindooeste = { name: "ACICLO (Lindo Oeste)", scraper: runAcicLindoOesteScraper };
   console.log("✅ Lindo Oeste carregado");
 }
+if (runMatelandiascraper) {
+  AVAILABLE_CITIES.cafelandia = { name: "ACIMAT (Matelândia)", scraper: runMatelandiascraper };
+  console.log("✅ Matelândia carregado");
+}
 
 console.log(`\n🔍 Cidades disponíveis: ${Object.keys(AVAILABLE_CITIES).join(", ")}`);
 function checkDirectoryStructure() {
@@ -114,6 +119,7 @@ function checkDirectoryStructure() {
     "./cafelandia",
     "./novaaurora",
     "./ceuAzul",
+    "./matelandia",
   ];
 
   expectedDirs.forEach((dir) => {
