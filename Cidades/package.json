@@ -15,6 +15,7 @@
     "novaAurora": "node /novaAurora/script.js",
     "lindoOeste": "node /lindoOeste/script.js",
     "matelandia": "node /matelandia/script.js",
+    "tupassi": "node /tupassi/script.js",
     "ceuAzul": "node /ceuAzul/script.js"
   },
   "keywords": [

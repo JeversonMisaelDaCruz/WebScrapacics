@@ -39,6 +39,7 @@ function safeRequire(modulePath) {
 }
 
 console.log("Verificando scrapers disponíveis...\n");
+const runTupassiScraper = safeRequire("./tupassi/script");
 const runCapitaoScraper = safeRequire("./capitao/scraper-acicap");
 const runCorbeliaScraper = safeRequire("./corbelia/script");
 const runCascavelScraper = safeRequire("./cascavel/script");
@@ -54,6 +55,10 @@ const runAcicLindoOesteScraper = safeRequire("./lindoOeste/script");
 
 const AVAILABLE_CITIES = {};
 
+if (runTupassiScraper) {
+  AVAILABLE_CITIES.tupassi = { name: "ACITUP (Tupãssi)", scraper: runTupassiScraper };
+  console.log("✅ Tupassi carregado");
+}
 if (runCapitaoScraper) {
   AVAILABLE_CITIES.capitao = { name: "ACICAP (Capitão)", scraper: runCapitaoScraper };
   console.log("✅ Capitão carregado");
@@ -117,6 +122,7 @@ function checkDirectoryStructure() {
     "./santaHelena",
     "./toledo",
     "./cafelandia",
+    "/tupassi",
     "./novaaurora",
     "./ceuAzul",
     "./matelandia",

@@ -1,15 +1,15 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const BASE_URL = "https://www.acima.org.br";
+const BASE_URL = "https://www.aciatu.com.br";
 
-class AcicMatelandiaScraper {
+class AcicTupassiScraper {
   constructor() {
     this.baseUrl = BASE_URL + "/associados";
   }
 
   async iniciarScraping() {
-    console.log("🚀 Iniciando web scraping de Matelandia");
+    console.log("🚀 Iniciando web scraping de tupassi");
     const empresas = [];
 
     try {
@@ -125,7 +125,7 @@ class AcicMatelandiaScraper {
                 telefone: detalhes.telefoneCompleto || telefoneTabela || null,
                 endereco: detalhes.endereco || null,
                 cep: detalhes.cep || null,
-                cidade: "Matelandia - PR",
+                cidade: "Tupassi - PR",
                 email: detalhes.email || null,
               };
 
@@ -182,13 +182,28 @@ class AcicMatelandiaScraper {
           $elemento.siblings(".media-left").find("i.fa-phone, i.fa-envelope").length > 0;
 
         if (!temIcone && texto.match(/\d{5}-\d{3}/)) {
-
-          dados.endereco = texto.replace(/\s+/g, " ").trim();
+          const textoCompleto = texto.replace(/\s+/g, " ").trim();
 
           // Extrai CEP
-          const cepMatch = texto.match(/(\d{5}-\d{3})/);
+          const cepMatch = textoCompleto.match(/(\d{5}-\d{3})/);
           if (cepMatch) {
             dados.cep = cepMatch[1];
+
+            // Remove o CEP e possíveis nomes de cidade do endereço
+            let enderecoLimpo = textoCompleto
+              .replace(cepMatch[1], "") // Remove o CEP
+              .replace(/\s*-\s*Tupassi\s*-?\s*PR\s*$/i, "") // Remove "- Tupassi - PR" no final
+              .replace(/\s*Tupassi\s*-?\s*PR\s*$/i, "") // Remove "Tupassi - PR" no final
+              .replace(/\s*-\s*PR\s*$/i, "") // Remove "- PR" no final
+              .replace(/\s*PR\s*$/i, "") // Remove "PR" no final
+              .replace(/\s*-\s*$/, "") // Remove traços no final
+              .replace(/\s+/g, " ") // Normaliza espaços
+              .trim();
+
+            // Remove vírgulas e espaços extras no final
+            enderecoLimpo = enderecoLimpo.replace(/\s*,\s*$/, "").trim();
+
+            dados.endereco = enderecoLimpo || null;
           }
         }
       });
@@ -206,6 +221,7 @@ class AcicMatelandiaScraper {
         }
       });
 
+      // Busca email - procura por ícone de email
       $(".dados-associado").each((_, elemento) => {
         const $elemento = $(elemento);
         const iconeEmail = $elemento.find(".media-left i.fa-envelope");
@@ -218,6 +234,7 @@ class AcicMatelandiaScraper {
         }
       });
 
+      // Fallback para email através de link mailto
       const mailtoLink = $("a[href^='mailto:']").attr("href");
       if (mailtoLink && !dados.email) {
         dados.email = mailtoLink.replace("mailto:", "");
@@ -237,9 +254,9 @@ class AcicMatelandiaScraper {
   }
 }
 
-async function runAcicMatelandia() {
-  const scraper = new AcicMatelandiaScraper();
+async function runAcicTupassi() {
+  const scraper = new AcicTupassiScraper();
   return await scraper.iniciarScraping();
 }
 
-module.exports = runAcicMatelandia;
+module.exports = runAcicTupassi;
