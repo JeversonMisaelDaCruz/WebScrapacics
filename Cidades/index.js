@@ -52,9 +52,15 @@ const runNovaAuroraScraper = safeRequire("./novaaurora/script");
 const runCeuAzulScraper = safeRequire("./ceuAzul/script");
 const runMatelandiascraper = safeRequire("./matelandia/script");
 const runAcicLindoOesteScraper = safeRequire("./lindoOeste/script");
+const runAcicSantaTereza = safeRequire("./santaTereza/script");
+const runAcicGuaraniacu = safeRequire("./guaraniacu/script");
 
 const AVAILABLE_CITIES = {};
 
+if (runAcicGuaraniacu) {
+  AVAILABLE_CITIES.guaraniacu = { name: "ACIGUA (Guaraniacu)", scraper: runAcicGuaraniacu };
+  console.log("✅ Guaraniacu carregado");
+}
 if (runTupassiScraper) {
   AVAILABLE_CITIES.tupassi = { name: "ACITUP (Tupãssi)", scraper: runTupassiScraper };
   console.log("✅ Tupassi carregado");
@@ -103,6 +109,10 @@ if (runMatelandiascraper) {
   AVAILABLE_CITIES.matelandia = { name: "ACIMAT (Matelândia)", scraper: runMatelandiascraper };
   console.log("✅ Matelândia carregado");
 }
+if (runAcicSantaTereza) {
+  AVAILABLE_CITIES.santatereza = { name: "ACICTE (Santa Tereza)", scraper: runAcicSantaTereza };
+  console.log("✅ Santa Tereza carregado");
+}
 if (runAcicLindoOesteScraper) {
   AVAILABLE_CITIES.lindooeste = { name: "ACICLO (Lindo Oeste)", scraper: runAcicLindoOesteScraper };
   console.log("✅ Lindo Oeste carregado");
@@ -121,8 +131,10 @@ function checkDirectoryStructure() {
     "./medianeira",
     "./santaHelena",
     "./toledo",
+    "./santaTereza",
     "./cafelandia",
-    "/tupassi",
+    "./tupassi",
+    "./guaraniacu",
     "./novaaurora",
     "./ceuAzul",
     "./matelandia",

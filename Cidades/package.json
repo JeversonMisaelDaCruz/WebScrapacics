@@ -1,6 +1,6 @@
 {
   "name": "projeto-webscrap-cidades",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Web scraper para coletar dados de empresas de associações comerciais em diferentes cidades.",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,9 @@
     "novaAurora": "node /novaAurora/script.js",
     "lindoOeste": "node /lindoOeste/script.js",
     "matelandia": "node /matelandia/script.js",
+    "cafelandia": "node /cafelandia/script.js",
+    "guaraniacu": "node /guaraniacu/script.js",
+    "santaTereza": "node /santaTereza/script.js",
     "tupassi": "node /tupassi/script.js",
     "ceuAzul": "node /ceuAzul/script.js"
   },
