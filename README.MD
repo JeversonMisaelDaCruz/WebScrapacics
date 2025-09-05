@@ -150,7 +150,7 @@ O projeto funciona **out-of-the-box** sem configurações adicionais. Os scraper
 
 ## 🔄 Fluxo de Execução
 
-O sistema segue um fluxo bem definido para garantir eficiência e confiabilidade na coleta de dados:
+O sistema segue um fluxo .
 
 ![Fluxo de Execução do WebScrapACICs](https://i.imgur.com/zhchBI6.png)
 
@@ -342,8 +342,4 @@ ACICAP (Capitão) concluído. Total: 45 empresas.
    }
    ```
 
----
 
-## 📝 Licença
-
-Este projeto é desenvolvido para fins educacionais e de automação de coleta de dados públicos.
