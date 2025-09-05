@@ -148,6 +148,24 @@ O projeto funciona **out-of-the-box** sem configurações adicionais. Os scraper
 
 ---
 
+## 🔄 Fluxo de Execução
+
+O sistema segue um fluxo bem definido para garantir eficiência e confiabilidade na coleta de dados:
+
+![Fluxo de Execução do WebScrapACICs](https://i.imgur.com/zhchBI6.png)
+
+### Detalhamento do Fluxo
+
+1. **🚀 Inicialização**: Carregamento dos módulos de scraping disponíveis
+2. **✅ Verificação**: Teste de conectividade e validação da estrutura dos sites
+3. **⚙️ Processamento**: Execução paralela dos scrapers selecionados
+4. **📊 Coleta**: Extração sistemática de dados por categoria empresarial
+5. **🔍 Detalhamento**: Busca de informações complementares de cada empresa
+6. **📁 Consolidação**: Unificação de todos os resultados coletados
+7. **💾 Exportação**: Geração automática de arquivos JSON e Excel com timestamp
+
+---
+
 ## Como Usar
 
 ### Execução Completa (Todas as Cidades)
@@ -219,7 +237,9 @@ node index.js cascavel toledo medianeira
 
 ---
 
-###  Padrão de Implementação
+## 🏗️ Arquitetura do Sistema
+
+### 🔧 Padrão de Implementação
 
 Cada scraper segue um padrão arquitetural consistente:
 
@@ -247,17 +267,7 @@ class CidadeScraper {
 }
 ```
 
-###  Fluxo de Execução
-
-1. **Inicialização**: Carregamento dos módulos de scraping
-2. **Verificação**: Teste de conectividade e estrutura
-3. **Processamento**: Execução paralela dos scrapers
-4. **Coleta**: Extração de dados por categoria
-5. **Detalhamento**: Busca de informações complementares
-6. **Consolidação**: Unificação de todos os resultados
-7. **Exportação**: Geração de arquivos JSON e Excel
-
-###  Otimizações Implementadas
+### ⚡ Otimizações Implementadas
 
 - **Rate Limiting**: 500ms entre requisições
 - **Timeout Configurável**: 30s por requisição
@@ -266,7 +276,8 @@ class CidadeScraper {
 - **Memory Management**: Limpeza automática de recursos
 
 ---
-###  Sistema de Logs
+
+## 📋 Sistema de Logs
 
 ```bash
 # Exemplo de saída de logs
@@ -279,7 +290,7 @@ ACICAP (Capitão) concluído. Total: 45 empresas.
 
 ---
 
-## Melhorias Futuras
+## 🚀 Melhorias Futuras
 
 ### 🛠️ Melhorias Técnicas Imediatas
 
@@ -293,9 +304,9 @@ ACICAP (Capitão) concluído. Total: 45 empresas.
 
 - [ ] **Error Tracking** (Sentry)
 
---
+---
 
-### Como Adicionar uma Nova Cidade
+## 📖 Como Adicionar uma Nova Cidade
 
 1. **Crie o diretório:**
 
@@ -331,4 +342,8 @@ ACICAP (Capitão) concluído. Total: 45 empresas.
    }
    ```
 
---
+---
+
+## 📝 Licença
+
+Este projeto é desenvolvido para fins educacionais e de automação de coleta de dados públicos.
